@@ -1,6 +1,6 @@
 
 #include <string.h>
-#include "../console/console.h"
+#include "../driver/console.h"
 #include "shell.h"
 #include "commands.h"
 
@@ -32,7 +32,7 @@ static int parseInt(const char *segment, shell_ParsedArgument *destination) {
 			destination->properties[0].asInt = 0;
 			return 1;
 		} else {
-			console_printLine("leading 0 digits are forbidden in decimal integer literals to about ambiguity with respect to octal literals");
+			driver_console_printLine("leading 0 digits are forbidden in decimal integer literals to about ambiguity with respect to octal literals");
 			return 0;
 		}
 	} else if (segment[0] == '-') {
@@ -57,7 +57,7 @@ static int parseInt(const char *segment, shell_ParsedArgument *destination) {
 			return 0;
 		}
 		if (digit >= radix) {
-			console_formatLine("invalid digit for radix %d: %c (%d)", radix, c, digit);
+			driver_console_formatLine("invalid digit for radix %d: %c (%d)", radix, c, digit);
 			return 0;
 		}
 		magnitude = radix * magnitude + digit;
@@ -88,7 +88,7 @@ int shell_parseCommandLine(char *commandLine) {
             *p = 0;
         } else if (!segmentStarted) {
             if (segmentCount == 16) {
-                console_printLine("ERROR: too many command line segments");
+                driver_console_printLine("ERROR: too many command line segments");
                 return 0;
             }
             segmentStarted = 1;
@@ -103,18 +103,18 @@ void shell_executeCommandLine() {
 
 	// skip empty lines
 	if (segmentCount == 0) {
-		console_printLine("");
+		driver_console_printLine("");
 		return;
 	}
 
 	// show the command to execute
-	console_printLine("");
-	console_print("* ");
+	driver_console_printLine("");
+	driver_console_print("* ");
 	for (int i=0; i<segmentCount; i++) {
-		console_print(segments[i]);
-		console_print(" ");
+		driver_console_print(segments[i]);
+		driver_console_print(" ");
 	}
-	console_printLine("");
+	driver_console_printLine("");
 
 	// find a matching command pattern
 	const char *commandName = segments[0];
@@ -127,8 +127,8 @@ void shell_executeCommandLine() {
 		}
 	}
 	if (commandPattern == NULL) {
-		console_print("unknown command: ");
-		console_printLine(commandName);
+		driver_console_print("unknown command: ");
+		driver_console_printLine(commandName);
 		return;
 	}
 
@@ -136,28 +136,28 @@ void shell_executeCommandLine() {
 	int minimumRepetitions = (commandPattern->repeatedArgument == NULL ? 0 : commandPattern->repeatedArgumentMinimumRepetitions);
 	argumentCount = segmentCount - 1;
 	if (argumentCount < commandPattern->fixedArgumentCount + minimumRepetitions) {
-		console_print("too few arguments for '");
-		console_print(commandName);
-		console_printLine("'. Usage:");
+		driver_console_print("too few arguments for '");
+		driver_console_print(commandName);
+		driver_console_printLine("'. Usage:");
 		shell_printSynopsis(commandPattern);
-		console_printLine("");
+		driver_console_printLine("");
 		return;
 	}
 	if (commandPattern->repeatedArgument == NULL && argumentCount > commandPattern->fixedArgumentCount) {
-		console_print("too many arguments for '");
-		console_print(commandName);
-		console_printLine("'. Usage:");
+		driver_console_print("too many arguments for '");
+		driver_console_print(commandName);
+		driver_console_printLine("'. Usage:");
 		shell_printSynopsis(commandPattern);
-		console_printLine("");
+		driver_console_printLine("");
 		return;
 	}
 	for (int i=0; i<commandPattern->fixedArgumentCount; i++) {
 		const shell_ArgumentPattern *argumentPattern = (commandPattern->fixedArguments + i);
 		const shell_ArgumentType *type = argumentPattern->type;
 		if (!type->parser(segments[1 + i], parsedArguments + i)) {
-			console_formatLine("syntax error in argument %d: expected %s. Usage:", (i + 2), type->name);
+			driver_console_formatLine("syntax error in argument %d: expected %s. Usage:", (i + 2), type->name);
 			shell_printSynopsis(commandPattern);
-			console_printLine("");
+			driver_console_printLine("");
 			return;
 		}
 	}
@@ -168,31 +168,31 @@ void shell_executeCommandLine() {
 }
 
 void shell_printSynopsis(shell_CommandPattern *commandPattern) {
-	console_print(commandPattern->name);
+	driver_console_print(commandPattern->name);
 	for (int j=0; j<commandPattern->fixedArgumentCount; j++) {
 		const shell_ArgumentPattern *argumentPattern = commandPattern->fixedArguments + j;
-		console_print(" <");
-		console_print(argumentPattern->name);
+		driver_console_print(" <");
+		driver_console_print(argumentPattern->name);
 		if (argumentPattern->type->name != NULL) {
-			console_print(":");
-			console_print(argumentPattern->type->name);
+			driver_console_print(":");
+			driver_console_print(argumentPattern->type->name);
 		}
-		console_print(">");
+		driver_console_print(">");
 	}
 	if (commandPattern->repeatedArgument != NULL) {
 		const shell_ArgumentPattern *argumentPattern = commandPattern->repeatedArgument;
-		console_print(" (<");
-		console_print(argumentPattern->name);
+		driver_console_print(" (<");
+		driver_console_print(argumentPattern->name);
 		if (argumentPattern->type->name != NULL) {
-			console_print(":");
-			console_print(argumentPattern->type->name);
+			driver_console_print(":");
+			driver_console_print(argumentPattern->type->name);
 		}
 		if (commandPattern->repeatedArgumentMinimumRepetitions == 0) {
-			console_print(">)*");
+			driver_console_print(">)*");
 		} else if (commandPattern->repeatedArgumentMinimumRepetitions == 1) {
-			console_print(">)+");
+			driver_console_print(">)+");
 		} else {
-			console_format(">)[%d+]", commandPattern->repeatedArgumentMinimumRepetitions);
+			driver_console_format(">)[%d+]", commandPattern->repeatedArgumentMinimumRepetitions);
 		}
 	}
 }
