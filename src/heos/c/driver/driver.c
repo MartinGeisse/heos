@@ -30,13 +30,13 @@ static int readHelper(int address, int bits) {
 }
 
 int read8(int address) {
-	readHelper(address, 8);
+	return readHelper(address, 8);
 }
 
 int read16(int address) {
-	readHelper(address, 16);
+	return readHelper(address, 16);
 }
 
 int read32(int address) {
-	readHelper(address, 32);
+	return readHelper(address, 32);
 }

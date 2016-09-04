@@ -48,6 +48,42 @@ static void _cmd_read32(int __attribute__((unused)) argumentCount, const shell_P
 	readHelper(read32(arguments[0].properties[0].asInt), 32);
 }
 
+static void _cmd_dump8(int __attribute__((unused)) argumentCount, const shell_ParsedArgument *arguments) {
+	int address = arguments[0].properties[0].asInt;
+	for (int row = 0; row < 16; row++) {
+		console_format("%08x:", address);
+		for (int column = 0; column < 16; column++) {
+			console_format(" %02x", read8(address) & 0xff);
+			address++;
+		}
+		console_printLine("");
+	}
+}
+
+static void _cmd_dump16(int __attribute__((unused)) argumentCount, const shell_ParsedArgument *arguments) {
+	int address = arguments[0].properties[0].asInt;
+	for (int row = 0; row < 16; row++) {
+		console_format("%08x:", address);
+		for (int column = 0; column < 8; column++) {
+			console_format(" %04x", read16(address) & 0xffff);
+			address+=2;
+		}
+		console_printLine("");
+	}
+}
+
+static void _cmd_dump32(int __attribute__((unused)) argumentCount, const shell_ParsedArgument *arguments) {
+	int address = arguments[0].properties[0].asInt;
+	for (int row = 0; row < 16; row++) {
+		console_format("%08x:", address);
+		for (int column = 0; column < 4; column++) {
+			console_format(" %08x", ((unsigned int)read32(address)) & 0xffffff);
+			address+=4;
+		}
+		console_printLine("");
+	}
+}
+
 const shell_CommandPattern shell_commandPatterns[] = {
 	{.name = "help", .fixedArgumentCount = 0, .fixedArguments = NULL, .repeatedArgument = NULL, .callback = _cmd_help},
 	{.name = "write8", .fixedArgumentCount = 2, .fixedArguments = &((shell_ArgumentPattern[]) {
@@ -71,6 +107,15 @@ const shell_CommandPattern shell_commandPatterns[] = {
 	{.name = "read32", .fixedArgumentCount = 1, .fixedArguments = &((shell_ArgumentPattern[]) {
 		{.name = "address", .type = &shell_intArgumentType},
 	}), .repeatedArgument = NULL, .callback = _cmd_read32},
+	{.name = "dump8", .fixedArgumentCount = 1, .fixedArguments = &((shell_ArgumentPattern[]) {
+		{.name = "baseAddress", .type = &shell_intArgumentType},
+	}), .repeatedArgument = NULL, .callback = _cmd_dump8},
+	{.name = "dump16", .fixedArgumentCount = 1, .fixedArguments = &((shell_ArgumentPattern[]) {
+		{.name = "baseAddress", .type = &shell_intArgumentType},
+	}), .repeatedArgument = NULL, .callback = _cmd_dump16},
+	{.name = "dump32", .fixedArgumentCount = 1, .fixedArguments = &((shell_ArgumentPattern[]) {
+		{.name = "baseAddress", .type = &shell_intArgumentType},
+	}), .repeatedArgument = NULL, .callback = _cmd_dump32},
 };
 
 const int shell_commandPatternCount = sizeof(shell_commandPatterns) / sizeof(shell_CommandPattern);
