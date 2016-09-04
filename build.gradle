@@ -1,0 +1,21 @@
+apply plugin: 'c'
+
+model {
+	components {
+		heos(NativeExecutableSpec) {
+		}
+	}
+}
+
+task demo(type: Copy, dependsOn: "heosExecutable") {
+	from "${project.buildDir}/binaries/heosExecutable/heos"
+	into "${projectDir}/demo/"
+}
+
+model {
+	binaries {
+		all {
+			cCompiler.args "-Weverything"
+		}
+	}
+}
