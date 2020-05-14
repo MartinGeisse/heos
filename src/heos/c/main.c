@@ -2,7 +2,7 @@
 #include "driver/console.h"
 #include "mainLoop/mainLoop.h"
 
-int main() {
+int main(void) {
 
     driver_console_format("");
     driver_console_format("", 0);

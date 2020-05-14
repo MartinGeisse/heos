@@ -8,9 +8,6 @@ function prepareOutputFolder() {
 }
 
 function buildFile($inputPath, $outputPath) {
-    global $objectFiles;
-    $objectFiles[] = $outputPath;
-
     $dotPosition = strrpos($inputPath, '.');
     if ($dotPosition === FALSE) {
         die('no dot in input filename');
@@ -19,7 +16,10 @@ function buildFile($inputPath, $outputPath) {
     if ($extension == 'h') {
         return;
     }
-    buildFileForTarget($inputPath, $outputPath, $extension);
+    if (buildFileForTarget($inputPath, $outputPath, $extension)) {
+        global $objectFiles;
+        $objectFiles[] = $outputPath;
+    }
 }
 
 function buildDirectory($inputPath, $outputPath) {

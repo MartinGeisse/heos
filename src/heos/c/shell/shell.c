@@ -31,7 +31,7 @@ static int splitSegments(char *commandLine) {
     return 1;
 }
 
-static void echoSplitCommandLine() {
+static void echoSplitCommandLine(void) {
 	driver_console_print("executing: ");
 	for (int i=0; i<segmentCount; i++) {
 		driver_console_print("[");

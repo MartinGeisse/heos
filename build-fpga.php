@@ -17,6 +17,7 @@ function buildFileForTarget($inputPath, $outputPath, $extension) {
         system($baseCommand . ' -S  -o ' . $outputPath . '.S ' . $inputPath);
     }
     system($baseCommand . ' -c  -o ' . $outputPath . ' ' . $inputPath);
+    return TRUE;
 }
 
 function linkFiles() {

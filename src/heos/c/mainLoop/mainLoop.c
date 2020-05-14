@@ -6,8 +6,9 @@
 static int mainLoopAborted = 0;
 static char commandLine[256];
 
-void mainLoop_loop() {
+void mainLoop_loop(void) {
     while (!mainLoopAborted) {
+        driver_console_print("> ");
         driver_console_readLine(commandLine, 256);
         shell_executeCommandLine(commandLine);
     }

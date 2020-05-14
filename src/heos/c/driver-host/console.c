@@ -1,11 +1,14 @@
 
+#include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include "console.h"
+#include "../driver/console.h"
 
 void driver_console_readLine(char *destinationBuffer, int bufferSize) {
-    fgets(destinationBuffer, bufferSize, stdin);
+    if (fgets(destinationBuffer, bufferSize, stdin) != destinationBuffer) {
+        exit(0);
+    }
     destinationBuffer[strlen(destinationBuffer) - 1] = 0;
 }
 
