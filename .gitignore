@@ -1,4 +1,4 @@
 .gradle
 .idea
-build
-demo
+/out-fpga
+/out-host

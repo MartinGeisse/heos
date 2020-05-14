@@ -31,26 +31,26 @@ function buildFile($inputPath, $outputPath) {
 function linkFiles() {
     global $objectFiles;
     $objectFilesList = implode(' ', $objectFiles);
-    system(TOOL . 'ld -T src/linkerscript -Map=build/program.map -A rv32im -o build/program.elf ' . $objectFilesList);
+    system(TOOL . 'ld -T src/linkerscript -Map=out-host/program.map -A rv32im -o out-host/program.elf ' . $objectFilesList);
 }
 
 function convertExecutable() {
-    system(TOOL . 'objcopy -j .image -I elf32-littleriscv -O binary build/program.elf build/program.bin');
+    system(TOOL . 'objcopy -j .image -I elf32-littleriscv -O binary out-host/program.elf out-host/program.bin');
 }
 
 //
 // --------------------------------------------------------------------------------------------------------------------
 //
 
-system('rm -rf build');
-system('mkdir build');
+system('rm -rf out-host');
+system('mkdir out-host');
 
-$paths = array('src/start.S' => 'build/start.o');
+$paths = array('src/start.S' => 'out-host/start.o');
 $filenames = scandir('src');
 $filenames = array('loadlib.c');
 foreach ($filenames as $filename) {
     if (strpos($filename, '.c') === strlen($filename) - 2) {
-        $paths['src/' . $filename] = 'build/' . substr($filename, 0, strlen($filename) - 2) . '.o';
+        $paths['src/' . $filename] = 'out-host/' . substr($filename, 0, strlen($filename) - 2) . '.o';
     }
 }
 

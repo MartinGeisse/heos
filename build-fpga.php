@@ -34,34 +34,34 @@ function buildDirectory($inputPath, $outputPath) {
     foreach ($filenames as $filename) {
         $dotPosition = strrpos($inputPath, '.');
         if ($dotPosition === FALSE) {
-            die('no dot in input filename');
+            buildDirectory($inputPath . '/' . $filename, $outputPath . '/' . $filename);
+        } else {
+            $baseName = substr($inputPath, 0, $dotPosition);
+            $inputFile = $inputPath . '/' . $filename;
+            $outputFile = $inputPath . '/' . $baseName . '.o';
+            // buildFile($inputFile, $outputFile);
+            echo $inputFile, ' -> ', $outputFile, "\n";
         }
-        $baseName = substr($inputPath, 0, $dotPosition);
-
-        $inputFile = $inputPath . '/' . $filename;
-        $outputFile = $inputPath . '/' . $baseName . '.o';
-        // buildFile($inputFile, $outputFile);
-        echo $inputFile, ' -> ', $outputFile, "\n";
     }
 }
 
 function linkFiles() {
     global $objectFiles;
     $objectFilesList = implode(' ', $objectFiles);
-    system(TOOL . 'ld -T src/linkerscript -Map=build-fpga/program.map -A rv32im -o build-fpga/program.elf ' . $objectFilesList);
+    system(TOOL . 'ld -T src/linkerscript -Map=out-fpga/program.map -A rv32im -o out-fpga/program.elf ' . $objectFilesList);
 }
 
 function convertExecutable() {
-    system(TOOL . 'objcopy -j .image -I elf32-littleriscv -O binary build-fpga/program.elf build-fpga/program.bin');
+    system(TOOL . 'objcopy -j .image -I elf32-littleriscv -O binary out-fpga/program.elf out-fpga/program.bin');
 }
 
 //
 // --------------------------------------------------------------------------------------------------------------------
 //
 
-system('rm -rf build-fpga');
-system('mkdir build-fpga');
+system('rm -rf out-fpga');
+system('mkdir out-fpga');
 
-buildDirectory('src', 'build-fpga');
+buildDirectory('src', 'out-fpga');
 linkFiles();
 convertExecutable();
