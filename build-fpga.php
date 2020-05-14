@@ -1,6 +1,7 @@
 #!/usr/bin/env php
 <?php
 
+define('TARGET', 'fpga');
 define('TOOL', '~/riscv-toolchain/bin/riscv32-unknown-linux-gnu-');
 
 function buildFileForTarget($inputPath, $outputPath, $extension) {
@@ -34,9 +35,7 @@ require('buildscript/common.php');
 // --------------------------------------------------------------------------------------------------------------------
 //
 
-system('rm -rf out-fpga');
-system('mkdir out-fpga');
-
+prepareOutputFolder();
 buildDirectory('src', 'out-fpga');
 linkFiles();
 convertExecutable();

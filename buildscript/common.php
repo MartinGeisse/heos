@@ -2,6 +2,11 @@
 
 $objectFiles = array();
 
+function prepareOutputFolder() {
+    system('rm -rf out-' . TARGET);
+    system('mkdir out-' . TARGET);
+}
+
 function buildFile($inputPath, $outputPath) {
     global $objectFiles;
     $objectFiles[] = $outputPath;

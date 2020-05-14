@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
 
+define('TARGET', 'host');
+
 function buildFileForTarget($inputPath, $outputPath, $extension) {
     if ($extension == 'S') {
         return;
@@ -26,8 +28,6 @@ require('buildscript/common.php');
 // --------------------------------------------------------------------------------------------------------------------
 //
 
-system('rm -rf out-host');
-system('mkdir out-host');
-
+prepareOutputFolder();
 buildDirectory('src', 'out-host');
 linkFiles();
