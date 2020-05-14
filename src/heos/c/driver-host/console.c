@@ -20,11 +20,11 @@ void driver_console_format(const char *formatBuffer, ...) {
     va_end(args);
 }
 
-void driver_console_printLine(const char *contentBuffer) {
+void driver_console_println(const char *contentBuffer) {
     puts(contentBuffer);
 }
 
-void driver_console_formatLine(const char *formatBuffer, ...) {
+void driver_console_formatln(const char *formatBuffer, ...) {
     va_list args;
     va_start(args, formatBuffer);
     vprintf(formatBuffer, args);

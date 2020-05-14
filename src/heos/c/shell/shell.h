@@ -35,6 +35,6 @@ extern shell_ArgumentType shell_intArgumentType;
 
 int shell_parseCommandLine(char *commandLine);
 void shell_executeCommandLine();
-void shell_printSynopsis(shell_CommandPattern *commandPattern);
+void shell_printSynopsis(const shell_CommandPattern *commandPattern);
 
 #endif

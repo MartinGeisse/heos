@@ -31,10 +31,13 @@ function buildDirectory($inputPath, $outputPath) {
         }
         $dotPosition = strrpos($filename, '.');
         if ($dotPosition === FALSE) {
-            $inputFolder = $inputPath . '/' . $filename;
-            $outputFolder = $outputPath . '/' . $filename;
-            system('mkdir ' . $outputFolder);
-            buildDirectory($inputFolder, $outputFolder);
+            $dashPosition = strrpos($filename, '-');
+            if ($dashPosition === FALSE || substr($filename, $dashPosition + 1) == TARGET) {
+                $inputFolder = $inputPath . '/' . $filename;
+                $outputFolder = $outputPath . '/' . $filename;
+                system('mkdir ' . $outputFolder);
+                buildDirectory($inputFolder, $outputFolder);
+            }
         } else {
             $baseName = substr($filename, 0, $dotPosition);
             $inputFile = $inputPath . '/' . $filename;

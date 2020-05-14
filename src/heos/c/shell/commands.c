@@ -3,16 +3,31 @@
 #include "../driver/console.h"
 #include "commands.h"
 
-static void _cmd_help(int __attribute__((unused)) argumentCount, const shell_ParsedArgument * __attribute__((unused)) arguments) {
-	driver_console_printLine("List of commands:");
+// TODO: output info
+//
+// 	driver_console_formatln("reading %d-bit value from 0x%x", bits, address);
+//
+//	int bitMask = (1 << bits) - 1;
+//	int msbValue = (1 << (bits - 1));
+//	unsigned int unsignedData = data & bitMask;
+//	int signedData = unsignedData;
+//	if (signedData >= msbValue) {
+//		signedData = signedData - msbValue - msbValue;
+//	}
+// 	driver_console_formatln("writing %d-bit value %d / %d / 0x%x to 0x%x", bits, unsignedData, signedData, unsignedData, address);
+//
+
+static void _cmd_help(int __attribute__((unused)) argumentCount, const shell_ParsedArgument *arguments __attribute__((unused))) {
+	driver_console_println("List of commands:");
 	for (int i=0; i<shell_commandPatternCount; i++) {
 		const shell_CommandPattern *commandPattern = shell_commandPatterns + i;
 		driver_console_print("    ");
 		shell_printSynopsis(commandPattern);
-		driver_console_printLine("");
+		driver_console_println("");
 	}
 }
 
+/*
 static void _cmd_write8(int __attribute__((unused)) argumentCount, const shell_ParsedArgument *arguments) {
 	driver_memory_write8(arguments[0].properties[0].asInt, arguments[1].properties[0].asInt);
 }
@@ -33,7 +48,7 @@ static void readHelper(int data, int bits) {
 	if (signedData >= msbValue) {
 		signedData = signedData - msbValue - msbValue;
 	}
-	driver_console_formatLine("read %d-bit value %d / %d / 0x%x", bits, unsignedData, signedData, unsignedData);
+	driver_console_formatln("read %d-bit value %d / %d / 0x%x", bits, unsignedData, signedData, unsignedData);
 }
 
 static void _cmd_read8(int __attribute__((unused)) argumentCount, const shell_ParsedArgument *arguments) {
@@ -56,7 +71,7 @@ static void _cmd_dump8(int __attribute__((unused)) argumentCount, const shell_Pa
 			driver_console_format(" %02x", driver_memory_read8(address) & 0xff);
 			address++;
 		}
-		driver_console_printLine("");
+		driver_console_println("");
 	}
 }
 
@@ -68,7 +83,7 @@ static void _cmd_dump16(int __attribute__((unused)) argumentCount, const shell_P
 			driver_console_format(" %04x", driver_memory_read16(address) & 0xffff);
 			address+=2;
 		}
-		driver_console_printLine("");
+		driver_console_println("");
 	}
 }
 
@@ -80,12 +95,14 @@ static void _cmd_dump32(int __attribute__((unused)) argumentCount, const shell_P
 			driver_console_format(" %08x", ((unsigned int)driver_memory_read32(address)) & 0xffffff);
 			address+=4;
 		}
-		driver_console_printLine("");
+		driver_console_println("");
 	}
 }
+*/
 
 const shell_CommandPattern shell_commandPatterns[] = {
 	{.name = "help", .fixedArgumentCount = 0, .fixedArguments = NULL, .repeatedArgument = NULL, .callback = _cmd_help},
+/*
 	{.name = "write8", .fixedArgumentCount = 2, .fixedArguments = &((shell_ArgumentPattern[]) {
 		{.name = "address", .type = &shell_intArgumentType},
 		{.name = "data", .type = &shell_intArgumentType},
@@ -116,6 +133,7 @@ const shell_CommandPattern shell_commandPatterns[] = {
 	{.name = "dump32", .fixedArgumentCount = 1, .fixedArguments = &((shell_ArgumentPattern[]) {
 		{.name = "baseAddress", .type = &shell_intArgumentType},
 	}), .repeatedArgument = NULL, .callback = _cmd_dump32},
+*/
 };
 
 const int shell_commandPatternCount = sizeof(shell_commandPatterns) / sizeof(shell_CommandPattern);
