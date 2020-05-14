@@ -21,7 +21,7 @@ function buildFileForTarget($inputPath, $outputPath, $extension) {
 function linkFiles() {
     global $objectFiles;
     $objectFilesList = implode(' ', $objectFiles);
-    system(TOOL . 'ld -T src/linkerscript -Map=out-fpga/program.map -A rv32im -o out-fpga/program.elf ' . $objectFilesList);
+    system(TOOL . 'ld -T buildscript/linkerscript-fpga -Map=out-fpga/program.map -A rv32im -o out-fpga/program.elf ' . $objectFilesList);
 }
 
 function convertExecutable() {
