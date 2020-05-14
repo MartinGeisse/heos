@@ -32,13 +32,16 @@ function buildDirectory($inputPath, $outputPath) {
     $filenames = scandir($inputPath);
     sort($filenames);
     foreach ($filenames as $filename) {
-        $dotPosition = strrpos($inputPath, '.');
+        if ($filename == '.' || $filename == '..') {
+            continue;
+        }
+        $dotPosition = strrpos($filename, '.');
         if ($dotPosition === FALSE) {
             buildDirectory($inputPath . '/' . $filename, $outputPath . '/' . $filename);
         } else {
-            $baseName = substr($inputPath, 0, $dotPosition);
+            $baseName = substr($filename, 0, $dotPosition);
             $inputFile = $inputPath . '/' . $filename;
-            $outputFile = $inputPath . '/' . $baseName . '.o';
+            $outputFile = $outputPath . '/' . $baseName . '.o';
             // buildFile($inputFile, $outputFile);
             echo $inputFile, ' -> ', $outputFile, "\n";
         }
