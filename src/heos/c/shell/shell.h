@@ -3,8 +3,8 @@
 #define HDR__SHELL_SHELL_H__
 
 typedef union {
+	const char *asText;
 	int asInt;
-	void *asPointer;
 } shell_ParsedArgumentProperty;
 
 typedef struct {
@@ -33,8 +33,7 @@ typedef struct {
 extern shell_ArgumentType shell_stringArgumentType;
 extern shell_ArgumentType shell_intArgumentType;
 
-int shell_parseCommandLine(char *commandLine);
-void shell_executeCommandLine();
+void shell_executeCommandLine(char *commandLine);
 void shell_printSynopsis(const shell_CommandPattern *commandPattern);
 
 #endif

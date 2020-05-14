@@ -4,13 +4,52 @@
 #include "shell.h"
 #include "commands.h"
 
+// --------------------------------------------------------------------------------------------------------------------
+// segment splitting
+// --------------------------------------------------------------------------------------------------------------------
+
 static char *segments[16];
 static int segmentCount;
+
+static int splitSegments(char *commandLine) {
+    segmentCount = 0;
+    int segmentStarted = 0;
+    for (char *p = commandLine; *p != 0; p++) {
+        if (*p == ' ') {
+            segmentStarted = 0;
+            *p = 0;
+        } else if (!segmentStarted) {
+            if (segmentCount == 16) {
+                driver_console_println("ERROR: too many command line segments");
+                return 0;
+            }
+            segmentStarted = 1;
+            segments[segmentCount] = p;
+            segmentCount++;
+        }
+    }
+    return 1;
+}
+
+static void echoSplitCommandLine() {
+	driver_console_print("executing: ");
+	for (int i=0; i<segmentCount; i++) {
+		driver_console_print("[");
+		driver_console_print(segments[i]);
+		driver_console_print("] ");
+	}
+	driver_console_println("");
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// argument parsing
+// --------------------------------------------------------------------------------------------------------------------
+
 static shell_ParsedArgument parsedArguments[16];
 static int argumentCount;
 
 static int parseString(const char *segment, shell_ParsedArgument *destination) {
-	destination->properties[0].asPointer = (void*)segment;
+	destination->properties[0].asText = segment;
 	return 1;
 }
 
@@ -80,42 +119,24 @@ shell_ArgumentType shell_intArgumentType = {
 	.parser = parseInt,
 };
 
-int shell_parseCommandLine(char *commandLine) {
-    segmentCount = 0;
-    int segmentStarted = 0;
-    for (char *p = commandLine; *p != 0; p++) {
-        if (*p == ' ') {
-            segmentStarted = 0;
-            *p = 0;
-        } else if (!segmentStarted) {
-            if (segmentCount == 16) {
-                driver_console_println("ERROR: too many command line segments");
-                return 0;
-            }
-            segmentStarted = 1;
-            segments[segmentCount] = p;
-            segmentCount++;
-        }
-    }
-    return 1;
-}
+// --------------------------------------------------------------------------------------------------------------------
+// main command execution logic
+// --------------------------------------------------------------------------------------------------------------------
 
-void shell_executeCommandLine() {
+void shell_executeCommandLine(char *commandLine) {
+
+    // split into segments
+    if (!splitSegments(commandLine)) {
+        return;
+    }
 
 	// skip empty lines
 	if (segmentCount == 0) {
-		driver_console_println("");
 		return;
 	}
 
 	// show the command to execute
-	driver_console_println("");
-	driver_console_print("* ");
-	for (int i=0; i<segmentCount; i++) {
-		driver_console_print(segments[i]);
-		driver_console_print(" ");
-	}
-	driver_console_println("");
+	echoSplitCommandLine();
 
 	// find a matching command pattern
 	const char *commandName = segments[0];

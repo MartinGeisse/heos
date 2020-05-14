@@ -9,9 +9,7 @@ static char commandLine[256];
 void mainLoop_loop() {
     while (!mainLoopAborted) {
         driver_console_readLine(commandLine, 256);
-        if (shell_parseCommandLine(commandLine)) {
-            shell_executeCommandLine();
-        }
+        shell_executeCommandLine(commandLine);
     }
 }
 
