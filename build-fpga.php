@@ -14,6 +14,9 @@ function buildFile($inputPath, $outputPath) {
         die('no dot in input filename');
     }
     $extension = substr($inputPath, $dotPosition + 1);
+    if ($extension == 'h') {
+        return;
+    }
     $allowedExtensions = array('c', 'cpp', 'S');
     if (!in_array($extension, $allowedExtensions)) {
         die('unknown input file extension: ' . $extension);
@@ -37,13 +40,16 @@ function buildDirectory($inputPath, $outputPath) {
         }
         $dotPosition = strrpos($filename, '.');
         if ($dotPosition === FALSE) {
-            buildDirectory($inputPath . '/' . $filename, $outputPath . '/' . $filename);
+            $inputFolder = $inputPath . '/' . $filename;
+            $outputFolder = $outputPath . '/' . $filename;
+            system('mkdir ' . $outputFolder);
+            buildDirectory($inputFolder, $outputFolder);
         } else {
             $baseName = substr($filename, 0, $dotPosition);
             $inputFile = $inputPath . '/' . $filename;
             $outputFile = $outputPath . '/' . $baseName . '.o';
-            // buildFile($inputFile, $outputFile);
             echo $inputFile, ' -> ', $outputFile, "\n";
+            buildFile($inputFile, $outputFile);
         }
     }
 }
