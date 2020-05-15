@@ -30,6 +30,8 @@ typedef struct {
 typedef struct {
     const char *name;
     const char *documentation;
+    int flagOffset; // type is char*, sets to 0 or 1 whether the option occurs; negative offset means no flag
+        // (useful when an argument is used that indicates presence of the option already, so no flag is needed)
     shell_ValuePattern *argument; // nullable
 } shell_OptionPattern;
 

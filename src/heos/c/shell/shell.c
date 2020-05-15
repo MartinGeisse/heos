@@ -161,10 +161,21 @@ static SegmentKind determineSegmentKind(const char *segment) {
 
 int shell_processOptionsAndArguments(void *storage) {
 
+    // prepare fixed argument storage
     shell_ValuePattern *nextFixedArgumentPattern = commandPattern->fixedArguments;
     if (nextFixedArgumentPattern->displayName == NULL) {
         nextFixedArgumentPattern = NULL;
     }
+
+    // set all option flags to 0
+    if (commandPattern->options != NULL) {
+        for (shell_OptionPattern *option = commandPattern->options; option->name != NULL; option++) {
+            if (option->flagOffset >= 0) {
+                // TODO
+            }
+        }
+    }
+
 
     int optionDelimiterSeen = 0;
     for (int i = 0; i < segmentCount; i++) {

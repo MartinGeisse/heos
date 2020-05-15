@@ -46,3 +46,7 @@ one such function, use the macro only for the offset computation:
 Unfortunately, the syntax for option arguments is something nobody is used to, including me. Since I think that using
 the command line should be the exception anyway, maybe it is acceptable to have an ambiguous syntax. Using declarative
 parsing at least makes it easy for the parser.
+
+Also, the current option parsing system cannot handle passing the same option-with-argument twice or more, since there
+is no way to specify storage for multiple arguments. This can be circumvented by an argument syntax that allows
+mutliple values. Repeated options are unintuitive anyway.
