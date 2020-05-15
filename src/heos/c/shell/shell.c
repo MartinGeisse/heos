@@ -40,7 +40,7 @@ const char *shell_valueTypeNames[shell_maxValueType] = {
 // value parsing
 // --------------------------------------------------------------------------------------------------------------------
 
-static int parseIntHelper(const char *text, int *destination) {
+static int parseIntHelper(const char *displayName, const char *text, int *destination) {
 
 	// handle radix specifier, negative numbers and special cases
 	int radix = 10;
@@ -59,7 +59,9 @@ static int parseIntHelper(const char *text, int *destination) {
 			*destination = 0;
 			return 1;
 		} else {
-			driver_console_println("leading 0 digits are forbidden in decimal integer literals to about ambiguity with respect to octal literals");
+		    driver_console_print("syntax error in <");
+		    driver_console_print(displayName);
+			driver_console_println(">: leading 0 digits are forbidden in decimal integer literals to about ambiguity with respect to octal literals");
 			return 0;
 		}
 	} else if (text[0] == '-') {
@@ -84,7 +86,9 @@ static int parseIntHelper(const char *text, int *destination) {
 			return 0;
 		}
 		if (digit >= radix) {
-			driver_console_formatln("invalid digit for radix %d: %c (%d)", radix, c, digit);
+			driver_console_print("syntax error in <");
+            driver_console_print(displayName);
+            driver_console_println(">: invalid digit for radix %d: %c (%d)", radix, c, digit);
 			return 0;
 		}
 		magnitude = radix * magnitude + digit;
@@ -106,7 +110,7 @@ static int parseValue(const char *text, const shell_ValuePattern *pattern, void 
             return 1;
 
         case shell_ValueType_integer:
-            return parseIntHelper(text, (int*)storage);
+            return parseIntHelper(pattern->displayName, text, (int*)storage);
 
         default:
             driver_console_println("ERROR: unknown value pattern type");
@@ -215,8 +219,9 @@ int shell_processOptionsAndArguments(void *storage) {
                         // TODO repeated argument
                     }
                 } else {
-                    // TODO fixed argument
-
+                    if (!parseValue(segment, nextFixedArgumentPattern, storage) {
+                        return 0;
+                    }
                     nextFixedArgumentPattern++;
                     if (nextFixedArgumentPattern->displayName == NULL) {
                         nextFixedArgumentPattern = NULL;
