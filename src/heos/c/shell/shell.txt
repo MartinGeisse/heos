@@ -1,0 +1,48 @@
+
+Unix Syntax has a flaw:
+
+    tool --opt foo bar
+
+... does not know if foo is a tool argument or an argument to --opt. This depends on --opt, so a mistake can easily
+cause further misinterpretation. Solution: Require special syntax for option arguments:
+
+    tool --opt foo bar      # foo is a tool argument
+    tool --opt=foo bar      # foo is an argument for --opt
+
+-----------------------------------------------------------------------------------------------------------------------
+
+Procedural or declarative argument parsing?
+
+Declarative makes help easier to print. With proc, we would have to run a "fake run" of command line parsing, which
+is error-prone.
+
+But declarative makes it harder to store parsing results.
+Storing the results in user variables via pointers:
+- does not work for additional (unbounded) arguments without pre-allocating a table for parsed values
+- where to store the pointers? Storing them in the argument declaration means to tie the allocation of argument
+    value storage to allocation of the argument declaration.
+Storing the results separately
+- means that code has to interpret that again, which is almost as complex as argument parsing.
+    - But it's parsed already, so it won't cause errors anymore.
+
+Maybe: Use pointers and use a central-allocated table for varargs. Data has to be moved out of that table before
+re-entering, but that is a rare case in HEOS. I can live with that.
+
+Maybe: Use offsets instead of pointers. Macros can help with that:
+
+    DECLARE_ARGUMENT(StructName, fieldName, type)
+
+hides pointer arithmetic to compute the offset of fieldName in StructName. Or, since we're going to have more than
+one such function, use the macro only for the offset computation:
+
+    declareIntegerArgument(ARGUMENT_OFFSET(StructName, fieldName), "message");
+
+    -->
+
+    tool message:hello foo bar
+
+-----------------------------------------------------------------------------------------------------------------------
+
+Unfortunately, the syntax for option arguments is something nobody is used to, including me. Since I think that using
+the command line should be the exception anyway, maybe it is acceptable to have an ambiguous syntax. Using declarative
+parsing at least makes it easy for the parser.
