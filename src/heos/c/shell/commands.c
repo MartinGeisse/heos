@@ -17,7 +17,10 @@
 // 	driver_console_formatln("writing %d-bit value %d / %d / 0x%x to 0x%x", bits, unsignedData, signedData, unsignedData, address);
 //
 
-static void _cmd_help(int __attribute__((unused)) argumentCount, const shell_ParsedArgument *arguments __attribute__((unused))) {
+static void _cmd_help() {
+    if (!shell_processOptionsAndArguments()) {
+        return;
+    }
 	driver_console_println("List of commands:");
 	for (int i=0; i<shell_commandPatternCount; i++) {
 		const shell_CommandPattern *commandPattern = shell_commandPatterns + i;
@@ -101,7 +104,13 @@ static void _cmd_dump32(int __attribute__((unused)) argumentCount, const shell_P
 */
 
 const shell_CommandPattern shell_commandPatterns[] = {
-	{.name = "help", .fixedArgumentCount = 0, .fixedArguments = NULL, .repeatedArgument = NULL, .callback = _cmd_help},
+	{
+	    .name = "help",
+	    .options = NULL,
+	    .fixedArguments = NULL,
+	    .repeatedArguments = NULL,
+	    .callback = _cmd_help
+    },
 /*
 	{.name = "write8", .fixedArgumentCount = 2, .fixedArguments = &((shell_ArgumentPattern[]) {
 		{.name = "address", .type = &shell_intArgumentType},

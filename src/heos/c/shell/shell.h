@@ -2,36 +2,68 @@
 #ifndef HDR__SHELL_SHELL_H__
 #define HDR__SHELL_SHELL_H__
 
-typedef union {
-	const char *asText;
-	int asInt;
-} shell_ParsedArgumentProperty;
+// --------------------------------------------------------------------------------------------------------------------
+// values
+// --------------------------------------------------------------------------------------------------------------------
+
+typedef enum {
+    shell_ValueType_string = 0,
+    shell_ValueType_integer = 1,
+} shell_ValueType;
 
 typedef struct {
-	shell_ParsedArgumentProperty properties[4];
-} shell_ParsedArgument;
+    const char *displayName;
+    shell_ValueType type;
+    int storageOffset;
+} shell_ValuePattern;
+
+#define FIELD_OFFSET(s,f)   (((char*)&(((s*)1000000).f)) - (char*)1000000)
+
+// --------------------------------------------------------------------------------------------------------------------
+// options
+// --------------------------------------------------------------------------------------------------------------------
 
 typedef struct {
+    const char *name;
+    const char *documentation;
+    shell_ValuePattern *argument; // nullable
+} shell_OptionPattern;
+
+// --------------------------------------------------------------------------------------------------------------------
+// commands
+// --------------------------------------------------------------------------------------------------------------------
+
+typedef struct {
+
+    // the name used to invoke the command
 	const char *name;
-	int (*parser)(const char *segment, shell_ParsedArgument *destination);
-} shell_ArgumentType;
 
-typedef struct {
-	const char *name;
-	const shell_ArgumentType *type;
-} shell_ArgumentPattern;
+	// options (nullable equivalent to empty; terminated by an entry with name = NULL)
+	shell_OptionPattern *options;
 
-typedef struct {
-	const char *name;
-	int fixedArgumentCount;
-	const shell_ArgumentPattern *fixedArguments;
-	const shell_ArgumentPattern *repeatedArgument;
-	int repeatedArgumentMinimumRepetitions;
-	void (*callback)(int argumentCount, const shell_ParsedArgument *destination);
+	// mandatory positional arguments (nullable equivalent to empty; terminated by an entry with displayName = NULL)
+	const shell_ValuePattern *fixedArguments;
+
+	// repeated positional arguments (nullable; single entry; storageOffset is ignored for these)
+	const shellValuePattern *repeatedArguments;
+
+    // the actual command implementation
+	void (*callback)(void);
+
 } shell_CommandPattern;
 
-extern shell_ArgumentType shell_stringArgumentType;
-extern shell_ArgumentType shell_intArgumentType;
+// --------------------------------------------------------------------------------------------------------------------
+// command implementation API
+// --------------------------------------------------------------------------------------------------------------------
+
+// Will use the shell_CommandPattern used to invoke the command. Returns 1 on success, 0 if the command line cannot
+// be matched by the pattern. In the latter case, the command should just return immediately.
+// The storage pointer can be NULL if the command does not accept any options or arguments.
+int shell_processOptionsAndArguments(void *storage);
+
+// --------------------------------------------------------------------------------------------------------------------
+// command invocation API
+// --------------------------------------------------------------------------------------------------------------------
 
 void shell_executeCommandLine(char *commandLine);
 void shell_printSynopsis(const shell_CommandPattern *commandPattern);
