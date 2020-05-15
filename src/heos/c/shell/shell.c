@@ -5,6 +5,15 @@
 #include "commands.h"
 
 // --------------------------------------------------------------------------------------------------------------------
+// value types
+// --------------------------------------------------------------------------------------------------------------------
+
+const char *shell_valueTypeNames[shell_maxValueType] = {
+    "string",
+    "integer",
+};
+
+// --------------------------------------------------------------------------------------------------------------------
 // value parsing
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -125,6 +134,10 @@ static void echoSplitCommandLine(void) {
 // command implementation API
 // --------------------------------------------------------------------------------------------------------------------
 
+int shell_processOptionsAndArguments(void *storage) {
+    // TODO
+}
+
 void foo(void) {
 	// parse the command's arguments
 	int minimumRepetitions = (commandPattern->repeatedArgument == NULL ? 0 : commandPattern->repeatedArgumentMinimumRepetitions);
@@ -197,49 +210,65 @@ void shell_executeCommandLine(char *commandLine) {
 
 }
 
+void shell_printSynopsis(const shell_CommandPattern *commandPattern) {
 
-// TODO
-// TODO
-// TODO
-// TODO
-// TODO
-// TODO
-// TODO
-// TODO
-// TODO
-// TODO
-// TODO
-// TODO
-// TODO
-// TODO
-// TODO
-// TODO
+    // name
+	driver_console_print(commandPattern->name);
 
-// --------------------------------------------------------------------------------------------------------------------
-// argument parsing
-// --------------------------------------------------------------------------------------------------------------------
+	// options
+	if (commandPattern->options != NULL && commandPattern->options->name != NULL) {
+	    driver_console_print(" [options] ");
+	} else {
+	    driver_console_print(" ");
+	}
 
-static shell_ParsedArgument parsedArguments[16];
-static int argumentCount;
+	// fixed arguments
+	if (commandPattern->fixedArguments != NULL) {
+        for (shell_ValuePattern *argumentPattern = commandPattern->fixedArguments;
+                argumentPattern->displayName != NULL;
+                argumentPattern++) {
+            driver_console_print(" <");
+            driver_console_print(argumentPattern->displayName);
+            if (argumentPattern->type != shell_ValueType_string) { // don't say "string" when we don't know better
+                driver_console_print(":");
+                driver_console_print(shell_valueTypeNames[argumentPattern->type]);
+            }
+            driver_console_print(">");
+        }
+	}
 
-static int parseString(const char *segment, shell_ParsedArgument *destination) {
-	destination->properties[0].asText = segment;
-	return 1;
+	// repeated arguments
+	if (commandPattern->repeatedArgument != NULL) {
+		const shell_ArgumentPattern *argumentPattern = commandPattern->repeatedArgument;
+		driver_console_print(" <");
+		driver_console_print(argumentPattern->displayName);
+        if (argumentPattern->type != shell_ValueType_string) { // don't say "string" when we don't know better
+            driver_console_print(":");
+            driver_console_print(shell_valueTypeNames[argumentPattern->type]);
+        }
+        driver_console_print(" ...>");
+	}
+
+	driver_console_println("");
 }
 
 
-shell_ArgumentType shell_stringArgumentType = {
-	.name = NULL,
-	.parser = parseString,
-};
-shell_ArgumentType shell_intArgumentType = {
-	.name = "int",
-	.parser = parseInt,
-};
-
-// --------------------------------------------------------------------------------------------------------------------
-// main command execution logic
-// --------------------------------------------------------------------------------------------------------------------
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
 
 void shell_executeCommandLine(char *commandLine) {
 
@@ -305,34 +334,4 @@ void shell_executeCommandLine(char *commandLine) {
 	// execute the command's callback
 	commandPattern->callback(argumentCount, parsedArguments);
 
-}
-
-void shell_printSynopsis(const shell_CommandPattern *commandPattern) {
-	driver_console_print(commandPattern->name);
-	for (int j=0; j<commandPattern->fixedArgumentCount; j++) {
-		const shell_ArgumentPattern *argumentPattern = commandPattern->fixedArguments + j;
-		driver_console_print(" <");
-		driver_console_print(argumentPattern->name);
-		if (argumentPattern->type->name != NULL) {
-			driver_console_print(":");
-			driver_console_print(argumentPattern->type->name);
-		}
-		driver_console_print(">");
-	}
-	if (commandPattern->repeatedArgument != NULL) {
-		const shell_ArgumentPattern *argumentPattern = commandPattern->repeatedArgument;
-		driver_console_print(" (<");
-		driver_console_print(argumentPattern->name);
-		if (argumentPattern->type->name != NULL) {
-			driver_console_print(":");
-			driver_console_print(argumentPattern->type->name);
-		}
-		if (commandPattern->repeatedArgumentMinimumRepetitions == 0) {
-			driver_console_print(">)*");
-		} else if (commandPattern->repeatedArgumentMinimumRepetitions == 1) {
-			driver_console_print(">)+");
-		} else {
-			driver_console_format(">)[%d+]", commandPattern->repeatedArgumentMinimumRepetitions);
-		}
-	}
 }

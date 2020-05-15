@@ -8,8 +8,12 @@
 
 typedef enum {
     shell_ValueType_string = 0,
-    shell_ValueType_integer = 1,
+    shell_ValueType_integer,
+    //
+    shell_maxValueType,
 } shell_ValueType;
+
+extern const char *shell_valueTypeNames[shell_maxValueType];
 
 typedef struct {
     const char *displayName;
@@ -45,7 +49,7 @@ typedef struct {
 	const shell_ValuePattern *fixedArguments;
 
 	// repeated positional arguments (nullable; single entry; storageOffset is ignored for these)
-	const shellValuePattern *repeatedArguments;
+	const shellValuePattern *repeatedArgument;
 
     // the actual command implementation
 	void (*callback)(void);
