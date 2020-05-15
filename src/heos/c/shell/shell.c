@@ -134,22 +134,79 @@ static void echoSplitCommandLine(void) {
 // command implementation API
 // --------------------------------------------------------------------------------------------------------------------
 
+typedef enum {
+    SegmentKind_argument,
+    SegmentKind_optionDelimiter,
+    SegmentKind_shortOptions,
+    SegmentKind_longOption,
+    SegmentKind_invalid,
+} SegmentKind;
+
+static SegmentKind determineSegmentKind(const char *segment) {
+    if (segment[0] != '-' || segment[1] == 0) {
+        return SegmentKind_argument;
+    }
+    if (segment[1] != '-') {
+        return SegmentKind_shortOptions;
+    }
+    if (segment[2] == 0) {
+        return SegmentKind_optionDelimiter;
+    }
+    if (segment[2] == '-') {
+        // nothing starts with "---"
+        return SegmentKind_invalid;
+    }
+    return SegmentKind_longOption;
+}
+
 int shell_processOptionsAndArguments(void *storage) {
-    // TODO
+
+    shell_ValuePattern *nextFixedArgumentPattern = commandPattern->fixedArguments;
+    if (nextFixedArgumentPattern->displayName == NULL) {
+        nextFixedArgumentPattern = NULL;
+    }
+
+    int optionDelimiterSeen = 0;
+    for (int i = 0; i < segmentCount; i++) {
+        const char *segment = segments[i];
+        SegmentKind kind = optionDelimiterSeen ? SegmentKind_argument : determineSegmentKind(segment);
+        switch (kind) {
+
+            case SegmentKind_argument:
+                // TODO
+                break;
+
+            case SegmentKind_optionDelimiter:
+                optionDelimiterSeen = 1;
+                break;
+
+            case SegmentKind_shortOptions:
+                // TODO
+                break;
+
+            case SegmentKind_longOption:
+                // TODO
+                break;
+
+            case SegmentKind_invalid:
+           		driver_console_print("invalid command segment: ");
+           		driver_console_println(segment);
+           		return 0;
+
+        }
+    }
+    if (nextFixedArgumentPattern != NULL) {
+        driver_console_print("too few arguments, expected: ");
+        driver_console_println(nextFixedArgumentPattern->displayName);
+        return 0;
+    }
+    return 1;
 }
 
 void foo(void) {
 	// parse the command's arguments
 	int minimumRepetitions = (commandPattern->repeatedArgument == NULL ? 0 : commandPattern->repeatedArgumentMinimumRepetitions);
 	argumentCount = segmentCount - 1;
-	if (argumentCount < commandPattern->fixedArgumentCount + minimumRepetitions) {
-		driver_console_print("too few arguments for '");
-		driver_console_print(commandName);
-		driver_console_println("'. Usage:");
-		shell_printSynopsis(commandPattern);
-		driver_console_println("");
-		return;
-	}
 	if (commandPattern->repeatedArgument == NULL && argumentCount > commandPattern->fixedArgumentCount) {
 		driver_console_print("too many arguments for '");
 		driver_console_print(commandName);
