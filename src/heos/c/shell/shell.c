@@ -5,6 +5,85 @@
 #include "commands.h"
 
 // --------------------------------------------------------------------------------------------------------------------
+// value parsing
+// --------------------------------------------------------------------------------------------------------------------
+
+static int parseIntHelper(const char *text, int *destination) {
+
+	// handle radix specifier, negative numbers and special cases
+	int radix = 10;
+	int sign = 1;
+	if (text[0] == '0') {
+		if (text[1] == 'x') {
+			text += 2;
+			radix = 16;
+		} else if (text[1] == 'o') {
+			text += 2;
+			radix = 8;
+		} else if (text[1] == 'b') {
+			text += 2;
+			radix = 2;
+		} else if (text[1] == 0) {
+			*destination = 0;
+			return 1;
+		} else {
+			driver_console_println("leading 0 digits are forbidden in decimal integer literals to about ambiguity with respect to octal literals");
+			return 0;
+		}
+	} else if (text[0] == '-') {
+		text++;
+		sign = -1;
+	}
+
+	// parse the actual number
+	int magnitude = 0;
+	while (1) {
+		int digit;
+		char c = *text;
+		if (c == 0) {
+			break;
+		} else if (c >= '0' && c <= '9') {
+			digit = (c - '0');
+		} else if (c >= 'a' && c <= 'z') {
+			digit = (c - 'a' + 10);
+		} else if (c >= 'A' && c <= 'Z') {
+			digit = (c - 'A' + 10);
+		} else {
+			return 0;
+		}
+		if (digit >= radix) {
+			driver_console_formatln("invalid digit for radix %d: %c (%d)", radix, c, digit);
+			return 0;
+		}
+		magnitude = radix * magnitude + digit;
+		text++;
+	}
+
+	// success
+	*destination = sign * magnitude;
+	return 1;
+
+}
+
+static int parseValue(const char *text, const shell_ValuePattern *pattern, void *storage) {
+    storage = ((char*)storage) + pattern->storageOffset;
+    switch (pattern->type) {
+
+        case shell_ValueType_string:
+            *(char**)storage = text;
+            return 1;
+
+        case shell_ValueType_integer:
+            return parseIntHelper(text, (int*)storage);
+
+        default:
+            driver_console_println("ERROR: unknown value pattern type");
+            return 0;
+
+    }
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 // segment splitting
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -41,6 +120,23 @@ static void echoSplitCommandLine(void) {
 	driver_console_println("");
 }
 
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+
 // --------------------------------------------------------------------------------------------------------------------
 // argument parsing
 // --------------------------------------------------------------------------------------------------------------------
@@ -53,62 +149,6 @@ static int parseString(const char *segment, shell_ParsedArgument *destination) {
 	return 1;
 }
 
-static int parseInt(const char *segment, shell_ParsedArgument *destination) {
-
-	// handle radix specifier, negative numbers and special cases
-	int radix = 10;
-	int sign = 1;
-	if (segment[0] == '0') {
-		if (segment[1] == 'x') {
-			segment += 2;
-			radix = 16;
-		} else if (segment[1] == 'o') {
-			segment += 2;
-			radix = 8;
-		} else if (segment[1] == 'b') {
-			segment += 2;
-			radix = 2;
-		} else if (segment[1] == 0) {
-			destination->properties[0].asInt = 0;
-			return 1;
-		} else {
-			driver_console_println("leading 0 digits are forbidden in decimal integer literals to about ambiguity with respect to octal literals");
-			return 0;
-		}
-	} else if (segment[0] == '-') {
-		segment++;
-		sign = -1;
-	}
-
-	// parse the actual number
-	int magnitude = 0;
-	while (1) {
-		int digit;
-		char c = *segment;
-		if (c == 0) {
-			break;
-		} else if (c >= '0' && c <= '9') {
-			digit = (c - '0');
-		} else if (c >= 'a' && c <= 'z') {
-			digit = (c - 'a' + 10);
-		} else if (c >= 'A' && c <= 'Z') {
-			digit = (c - 'A' + 10);
-		} else {
-			return 0;
-		}
-		if (digit >= radix) {
-			driver_console_formatln("invalid digit for radix %d: %c (%d)", radix, c, digit);
-			return 0;
-		}
-		magnitude = radix * magnitude + digit;
-		segment++;
-	}
-
-	// success
-	destination->properties[0].asInt = sign * magnitude;
-	return 1;
-
-}
 
 shell_ArgumentType shell_stringArgumentType = {
 	.name = NULL,
