@@ -171,11 +171,10 @@ int shell_processOptionsAndArguments(void *storage) {
     if (commandPattern->options != NULL) {
         for (shell_OptionPattern *option = commandPattern->options; option->name != NULL; option++) {
             if (option->flagOffset >= 0) {
-                // TODO
+                *(((char*)storage) + option->flagOffset) = 0;
             }
         }
     }
-
 
     int optionDelimiterSeen = 0;
     for (int i = 0; i < segmentCount; i++) {
@@ -184,7 +183,22 @@ int shell_processOptionsAndArguments(void *storage) {
         switch (kind) {
 
             case SegmentKind_argument:
-                // TODO
+                if (nextFixedArgumentPattern == NULL) {
+                    if (commandPattern->repeatedArgument == NULL) {
+                        driver_console_print("unexpected command argument: ");
+                        driver_console_println(segment);
+                        return 0;
+                    } else {
+                        // TODO repeated argument
+                    }
+                } else {
+                    // TODO fixed argument
+
+                    nextFixedArgumentPattern++;
+                    if (nextFixedArgumentPattern->displayName == NULL) {
+                        nextFixedArgumentPattern = NULL;
+                    }
+                }
                 break;
 
             case SegmentKind_optionDelimiter:
@@ -192,7 +206,10 @@ int shell_processOptionsAndArguments(void *storage) {
                 break;
 
             case SegmentKind_shortOptions:
-                // TODO
+                for (char *p = segment + 1; *p != 0; p++) {
+
+                    // TODO
+                }
                 break;
 
             case SegmentKind_longOption:
@@ -278,6 +295,10 @@ void shell_executeCommandLine(char *commandLine) {
 
 }
 
+// --------------------------------------------------------------------------------------------------------------------
+// command meta-data API
+// --------------------------------------------------------------------------------------------------------------------
+
 void shell_printSynopsis(const shell_CommandPattern *commandPattern) {
 
     // name
@@ -318,4 +339,12 @@ void shell_printSynopsis(const shell_CommandPattern *commandPattern) {
 	}
 
 	driver_console_println("");
+}
+
+shell_OptionPattern *shell_findShortOption(const shell_CommandPattern *commandPattern, char name) {
+    // TODO
+}
+
+shell_OptionPattern *shell_findOption(const shell_CommandPattern *commandPattern, const char *name) {
+    // TODO
 }

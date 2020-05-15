@@ -72,6 +72,14 @@ int shell_processOptionsAndArguments(void *storage);
 // --------------------------------------------------------------------------------------------------------------------
 
 void shell_executeCommandLine(char *commandLine);
+
+// --------------------------------------------------------------------------------------------------------------------
+// command meta-data API
+// --------------------------------------------------------------------------------------------------------------------
+
 void shell_printSynopsis(const shell_CommandPattern *commandPattern);
+
+shell_OptionPattern *shell_findShortOption(const shell_CommandPattern *commandPattern, char name);
+shell_OptionPattern *shell_findOption(const shell_CommandPattern *commandPattern, const char *name);
 
 #endif
