@@ -237,7 +237,27 @@ int shell_processOptionsAndArguments(void *storage) {
                         driver_console_println("");
                         return 0;
                     }
-                    // TODO
+                    if (optionPattern->flatOffset >= 0) {
+                        *(((char*)storage) + optionPattern->flagOffset) = 1;
+                    }
+                    if (optionPattern->argument != NULL) {
+                        if (p[1] != 0) {
+                            driver_console_print("found option with argument in the middle of multiple short options: -");
+                            driver_console_printChar(*p);
+                            driver_console_println("");
+                            return 0;
+                        }
+                        if (i == segmentCount - 1) {
+                            driver_console_print("missing argument for option: -");
+                            driver_console_printChar(*p);
+                            driver_console_println("");
+                            return 0;
+                        }
+                        if (!parseValue(i + 1, optionPattern->argument, storage)) {
+                            return 0;
+                        }
+                        i++;
+                    }
                 }
                 break;
 
@@ -248,7 +268,20 @@ int shell_processOptionsAndArguments(void *storage) {
                     driver_console_println(segment);
                     return 0;
                 }
-                // TODO
+                if (optionPattern->flatOffset >= 0) {
+                    *(((char*)storage) + optionPattern->flagOffset) = 1;
+                }
+                if (optionPattern->argument != NULL) {
+                    if (i == segmentCount - 1) {
+                        driver_console_print("missing argument for option: ");
+                        driver_console_println(segment);
+                        return 0;
+                    }
+                    if (!parseValue(i + 1, optionPattern->argument, storage)) {
+                        return 0;
+                    }
+                    i++;
+                }
                 break;
             }
 
