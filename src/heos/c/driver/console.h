@@ -4,6 +4,7 @@
 
 void driver_console_readLine(char *destinationBuffer, int bufferSize);
 
+void driver_console_printChar(char c);
 void driver_console_print(const char *contentBuffer);
 void driver_console_println(const char *contentBuffer);
 void driver_console_format(const char *formatBuffer, ...);

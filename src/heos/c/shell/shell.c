@@ -5,6 +5,29 @@
 #include "commands.h"
 
 // --------------------------------------------------------------------------------------------------------------------
+// helpers
+// --------------------------------------------------------------------------------------------------------------------
+
+static int stringsEqual(const char *a, const char *b) {
+    while (1) {
+        char ca = *a, cb = *b;
+        if (ca == 0) {
+            if (cb == 0) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } else {
+            if (cb == 0 || ca != cb) {
+                return 0;
+            }
+        }
+        a++;
+        b++;
+    }
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 // value types
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -207,14 +230,27 @@ int shell_processOptionsAndArguments(void *storage) {
 
             case SegmentKind_shortOptions:
                 for (char *p = segment + 1; *p != 0; p++) {
-
+                    shell_OptionPattern *optionPattern = shell_findOption(commandPattern, *p);
+                    if (optionPattern == NULL) {
+                        driver_console_print("unknown option: -");
+                        driver_console_printChar(*p);
+                        driver_console_println("");
+                        return 0;
+                    }
                     // TODO
                 }
                 break;
 
-            case SegmentKind_longOption:
+            case SegmentKind_longOption: {
+                shell_OptionPattern *optionPattern = shell_findOption(commandPattern, segment + 2);
+                if (optionPattern == NULL) {
+                    driver_console_print("unknown option: ");
+                    driver_console_println(segment);
+                    return 0;
+                }
                 // TODO
                 break;
+            }
 
             case SegmentKind_invalid:
            		driver_console_print("invalid command segment: ");
@@ -342,9 +378,25 @@ void shell_printSynopsis(const shell_CommandPattern *commandPattern) {
 }
 
 shell_OptionPattern *shell_findShortOption(const shell_CommandPattern *commandPattern, char name) {
-    // TODO
+    if (commandPattern->options == NULL) {
+        return NULL;
+    }
+    for (shell_OptionPattern *option = commandPattern->options; option->name != NULL; option++) {
+        if (option->name[0] == name && option->name[1] == 0) {
+            return option;
+        }
+    }
+    return NULL;
 }
 
 shell_OptionPattern *shell_findOption(const shell_CommandPattern *commandPattern, const char *name) {
-    // TODO
+    if (commandPattern->options == NULL) {
+        return NULL;
+    }
+    for (shell_OptionPattern *option = commandPattern->options; option->name != NULL; option++) {
+        if (stringsEqual(name, option->name)) {
+            return option;
+        }
+    }
+    return NULL;
 }
