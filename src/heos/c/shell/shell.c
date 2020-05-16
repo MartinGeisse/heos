@@ -125,6 +125,7 @@ static int parseValue(const char *text, const shell_ValuePattern *pattern, void 
 
 static char *segments[16];
 static int segmentCount;
+static int repeatedSegmentsConsumed;
 static const shell_CommandPattern *commandPattern;
 
 static int splitSegments(char *commandLine) {
@@ -188,6 +189,10 @@ static SegmentKind determineSegmentKind(const char *segment) {
 
 int shell_processOptionsAndArguments(void *storage) {
 
+    // We use this index to change the list of segments while processing it, so only a list of repeated arguments
+    // remains for shell_processRepeatedArgument().
+    int repeatedArgumentsWritten = 0;
+
     // prepare fixed argument storage
     shell_ValuePattern *nextFixedArgumentPattern = commandPattern->fixedArguments;
     if (nextFixedArgumentPattern->displayName == NULL) {
@@ -216,7 +221,8 @@ int shell_processOptionsAndArguments(void *storage) {
                         driver_console_println(segment);
                         return 0;
                     } else {
-                        // TODO repeated argument
+                        segments[repeatedArgumentsWritten] = segment;
+                        repeatedArgumentsWritten++;
                     }
                 } else {
                     if (!parseValue(segment, nextFixedArgumentPattern, storage) {
@@ -302,31 +308,19 @@ int shell_processOptionsAndArguments(void *storage) {
         driver_console_println(nextFixedArgumentPattern->displayName);
         return 0;
     }
+    segmentCount = repeatedArgumentsWritten;
+    repeatedSegmentsConsumed = 0;
     return 1;
 }
 
-void foo(void) {
-	// parse the command's arguments
-	int minimumRepetitions = (commandPattern->repeatedArgument == NULL ? 0 : commandPattern->repeatedArgumentMinimumRepetitions);
-	argumentCount = segmentCount - 1;
-	if (commandPattern->repeatedArgument == NULL && argumentCount > commandPattern->fixedArgumentCount) {
-		driver_console_print("too many arguments for '");
-		driver_console_print(commandName);
-		driver_console_println("'. Usage:");
-		shell_printSynopsis(commandPattern);
-		driver_console_println("");
-		return;
-	}
-	for (int i=0; i<commandPattern->fixedArgumentCount; i++) {
-		const shell_ArgumentPattern *argumentPattern = (commandPattern->fixedArguments + i);
-		const shell_ArgumentType *type = argumentPattern->type;
-		if (!type->parser(segments[1 + i], parsedArguments + i)) {
-			driver_console_formatln("syntax error in argument %d: expected %s. Usage:", (i + 2), type->name);
-			shell_printSynopsis(commandPattern);
-			driver_console_println("");
-			return;
-		}
-	}
+int shell_processRepeatedArgument(void *storage) {
+    if (repeatedSegmentsConsumed == segmentCount) {
+        return -1;
+    } else {
+        int result = parseValue(segments[repeatedSegmentsConsumed], commandPattern->repeatedArguments, storage);
+        repeatedSegmentsConsumed++;
+        return result;
+    }
 }
 
 // --------------------------------------------------------------------------------------------------------------------

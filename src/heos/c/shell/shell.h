@@ -50,7 +50,7 @@ typedef struct {
 	// mandatory positional arguments (nullable equivalent to empty; terminated by an entry with displayName = NULL)
 	const shell_ValuePattern *fixedArguments;
 
-	// repeated positional arguments (nullable; single entry; storageOffset is ignored for these)
+	// repeated positional arguments (nullable; single entry since all repeated arguments must be alike)
 	const shellValuePattern *repeatedArgument;
 
     // the actual command implementation
@@ -65,7 +65,21 @@ typedef struct {
 // Will use the shell_CommandPattern used to invoke the command. Returns 1 on success, 0 if the command line cannot
 // be matched by the pattern. In the latter case, the command should just return immediately.
 // The storage pointer can be NULL if the command does not accept any options or arguments.
-int shell_processOptionsAndArguments(void *storage);
+//
+// This function processes all options and arguments except repeated arguments, because there is no way to specify
+// storage for an unbounded number of arguments. After calling this function once, use shell_processRepeatedArguments()
+// for the repeated arguments.
+int shell_processOptionsAndFixedArguments(void *storage);
+
+// Can only be called after shell_processOptionsAndFixedArguments() has been called. Processes a single repeated
+// argument, and stores its value in the designated storage field. Like shell_processOptionsAndFixedArguments(),
+// returns 1 on success, 0 on syntax errors (this indicates that the command should just return immediately).
+// Returns -1 to indicate that all repeated arguments have been consumed.
+//
+// As an alternative to a field in the storage block that changes its value for each call, the pointer passed to this
+// function can point to the field to store the value in directly, such as a pointer to a local variable of the caller.
+// In this case, set the offset in the argument pattern to 0 so this function does not add an offset.
+int shell_processRepeatedArgument(void *storage);
 
 // --------------------------------------------------------------------------------------------------------------------
 // command invocation API
