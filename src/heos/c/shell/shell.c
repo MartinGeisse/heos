@@ -1,6 +1,6 @@
 
 #include <string.h>
-#include "../driver/console.h"
+#include "../driver/terminal.h"
 #include "shell.h"
 #include "commands.h"
 
@@ -59,9 +59,9 @@ static int parseIntHelper(const char *displayName, const char *text, int *destin
 			*destination = 0;
 			return 1;
 		} else {
-		    driver_console_print("syntax error in <");
-		    driver_console_print(displayName);
-			driver_console_println(">: leading 0 digits are forbidden in decimal integer literals to about ambiguity with respect to octal literals");
+		    driver_terminal_printString("syntax error in <");
+		    driver_terminal_printString(displayName);
+			driver_terminal_printlnString(">: leading 0 digits are forbidden in decimal integer literals to about ambiguity with respect to octal literals");
 			return 0;
 		}
 	} else if (text[0] == '-') {
@@ -86,9 +86,9 @@ static int parseIntHelper(const char *displayName, const char *text, int *destin
 			return 0;
 		}
 		if (digit >= radix) {
-			driver_console_print("syntax error in <");
-            driver_console_print(displayName);
-            driver_console_println(">: invalid digit for radix %d: %c (%d)", radix, c, digit);
+			driver_terminal_printString("syntax error in <");
+            driver_terminal_printString(displayName);
+            driver_terminal_printlnString(">: invalid digit for radix %d: %c (%d)", radix, c, digit);
 			return 0;
 		}
 		magnitude = radix * magnitude + digit;
@@ -113,7 +113,7 @@ static int parseValue(const char *text, const shell_ValuePattern *pattern, void 
             return parseIntHelper(pattern->displayName, text, (int*)storage);
 
         default:
-            driver_console_println("ERROR: unknown value pattern type");
+            driver_terminal_printlnString("ERROR: unknown value pattern type");
             return 0;
 
     }
@@ -137,7 +137,7 @@ static int splitSegments(char *commandLine) {
             *p = 0;
         } else if (!segmentStarted) {
             if (segmentCount == 16) {
-                driver_console_println("ERROR: too many command line segments");
+                driver_terminal_printlnString("ERROR: too many command line segments");
                 return 0;
             }
             segmentStarted = 1;
@@ -149,13 +149,13 @@ static int splitSegments(char *commandLine) {
 }
 
 static void echoSplitCommandLine(void) {
-	driver_console_print("executing: ");
+	driver_terminal_printString("executing: ");
 	for (int i=0; i<segmentCount; i++) {
-		driver_console_print("[");
-		driver_console_print(segments[i]);
-		driver_console_print("] ");
+		driver_terminal_printChar('[');
+		driver_terminal_printString(segments[i]);
+		driver_terminal_printString("] ");
 	}
-	driver_console_println("");
+	driver_terminal_println();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -217,8 +217,8 @@ int shell_processOptionsAndArguments(void *storage) {
             case SegmentKind_argument:
                 if (nextFixedArgumentPattern == NULL) {
                     if (commandPattern->repeatedArgument == NULL) {
-                        driver_console_print("unexpected command argument: ");
-                        driver_console_println(segment);
+                        driver_terminal_printString("unexpected command argument: ");
+                        driver_terminal_printlnString(segment);
                         return 0;
                     } else {
                         segments[repeatedArgumentsWritten] = segment;
@@ -243,9 +243,9 @@ int shell_processOptionsAndArguments(void *storage) {
                 for (char *p = segment + 1; *p != 0; p++) {
                     shell_OptionPattern *optionPattern = shell_findOption(commandPattern, *p);
                     if (optionPattern == NULL) {
-                        driver_console_print("unknown option: -");
-                        driver_console_printChar(*p);
-                        driver_console_println("");
+                        driver_terminal_printString("unknown option: -");
+                        driver_terminal_printChar(*p);
+                        driver_terminal_println();
                         return 0;
                     }
                     if (optionPattern->flatOffset >= 0) {
@@ -253,15 +253,15 @@ int shell_processOptionsAndArguments(void *storage) {
                     }
                     if (optionPattern->argument != NULL) {
                         if (p[1] != 0) {
-                            driver_console_print("found option with argument in the middle of multiple short options: -");
-                            driver_console_printChar(*p);
-                            driver_console_println("");
+                            driver_terminal_printString("found option with argument in the middle of multiple short options: -");
+                            driver_terminal_printChar(*p);
+                            driver_terminal_println();
                             return 0;
                         }
                         if (i == segmentCount - 1) {
-                            driver_console_print("missing argument for option: -");
-                            driver_console_printChar(*p);
-                            driver_console_println("");
+                            driver_terminal_printString("missing argument for option: -");
+                            driver_terminal_printChar(*p);
+                            driver_terminal_println();
                             return 0;
                         }
                         if (!parseValue(i + 1, optionPattern->argument, storage)) {
@@ -275,8 +275,8 @@ int shell_processOptionsAndArguments(void *storage) {
             case SegmentKind_longOption: {
                 shell_OptionPattern *optionPattern = shell_findOption(commandPattern, segment + 2);
                 if (optionPattern == NULL) {
-                    driver_console_print("unknown option: ");
-                    driver_console_println(segment);
+                    driver_terminal_printString("unknown option: ");
+                    driver_terminal_printlnString(segment);
                     return 0;
                 }
                 if (optionPattern->flatOffset >= 0) {
@@ -284,8 +284,8 @@ int shell_processOptionsAndArguments(void *storage) {
                 }
                 if (optionPattern->argument != NULL) {
                     if (i == segmentCount - 1) {
-                        driver_console_print("missing argument for option: ");
-                        driver_console_println(segment);
+                        driver_terminal_printString("missing argument for option: ");
+                        driver_terminal_printlnString(segment);
                         return 0;
                     }
                     if (!parseValue(i + 1, optionPattern->argument, storage)) {
@@ -297,15 +297,15 @@ int shell_processOptionsAndArguments(void *storage) {
             }
 
             case SegmentKind_invalid:
-           		driver_console_print("invalid command segment: ");
-           		driver_console_println(segment);
+           		driver_terminal_printString("invalid command segment: ");
+           		driver_terminal_printlnString(segment);
            		return 0;
 
         }
     }
     if (nextFixedArgumentPattern != NULL) {
-        driver_console_print("too few arguments, expected: ");
-        driver_console_println(nextFixedArgumentPattern->displayName);
+        driver_terminal_printString("too few arguments, expected: ");
+        driver_terminal_printlnString(nextFixedArgumentPattern->displayName);
         return 0;
     }
     segmentCount = repeatedArgumentsWritten;
@@ -353,8 +353,8 @@ void shell_executeCommandLine(char *commandLine) {
 		}
 	}
 	if (commandPattern == NULL) {
-		driver_console_print("unknown command: ");
-		driver_console_println(commandName);
+		driver_terminal_printString("unknown command: ");
+		driver_terminal_printlnString(commandName);
 		return;
 	}
 
@@ -370,13 +370,13 @@ void shell_executeCommandLine(char *commandLine) {
 void shell_printSynopsis(const shell_CommandPattern *commandPattern) {
 
     // name
-	driver_console_print(commandPattern->name);
+	driver_terminal_printString(commandPattern->name);
 
 	// options
 	if (commandPattern->options != NULL && commandPattern->options->name != NULL) {
-	    driver_console_print(" [options] ");
+	    driver_terminal_printString(" [options] ");
 	} else {
-	    driver_console_print(" ");
+	    driver_terminal_printChar(' ');
 	}
 
 	// fixed arguments
@@ -384,29 +384,29 @@ void shell_printSynopsis(const shell_CommandPattern *commandPattern) {
         for (shell_ValuePattern *argumentPattern = commandPattern->fixedArguments;
                 argumentPattern->displayName != NULL;
                 argumentPattern++) {
-            driver_console_print(" <");
-            driver_console_print(argumentPattern->displayName);
+            driver_terminal_printString(" <");
+            driver_terminal_printString(argumentPattern->displayName);
             if (argumentPattern->type != shell_ValueType_string) { // don't say "string" when we don't know better
-                driver_console_print(":");
-                driver_console_print(shell_valueTypeNames[argumentPattern->type]);
+                driver_terminal_printChar(':');
+                driver_terminal_printString(shell_valueTypeNames[argumentPattern->type]);
             }
-            driver_console_print(">");
+            driver_terminal_printChar('>');
         }
 	}
 
 	// repeated arguments
 	if (commandPattern->repeatedArgument != NULL) {
 		const shell_ArgumentPattern *argumentPattern = commandPattern->repeatedArgument;
-		driver_console_print(" <");
-		driver_console_print(argumentPattern->displayName);
+		driver_terminal_printString(" <");
+		driver_terminal_printString(argumentPattern->displayName);
         if (argumentPattern->type != shell_ValueType_string) { // don't say "string" when we don't know better
-            driver_console_print(":");
-            driver_console_print(shell_valueTypeNames[argumentPattern->type]);
+            driver_terminal_printChar(':');
+            driver_terminal_printString(shell_valueTypeNames[argumentPattern->type]);
         }
-        driver_console_print(" ...>");
+        driver_terminal_printString(" ...>");
 	}
 
-	driver_console_println("");
+	driver_terminal_println();
 }
 
 shell_OptionPattern *shell_findShortOption(const shell_CommandPattern *commandPattern, char name) {

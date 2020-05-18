@@ -1,24 +1,13 @@
 
-#include "driver/console.h"
+#include "driver/terminal.h"
 #include "mainLoop/mainLoop.h"
 
 int main(void) {
-
-    driver_console_format("");
-    driver_console_format("", 0);
-    driver_console_format("", 0, 0);
-    driver_console_format("", 0, 0, 0);
-    driver_console_format("", 0, 0, 0, 0);
-    driver_console_format("", 0, 0, 0, 0, 0);
-    driver_console_format("", 0, 0, 0, 0, 0, 0);
-    driver_console_format("", 0, 0, 0, 0, 0, 0, 0);
-
-
-    driver_console_println("");
-    driver_console_println("****************");
-    driver_console_println("* HEOS started *");
-    driver_console_println("****************");
-    driver_console_println("");
+    driver_terminal_println();
+    driver_terminal_printlnString("****************");
+    driver_terminal_printlnString("* HEOS started *");
+    driver_terminal_printlnString("****************");
+    driver_terminal_println();
     mainLoop_loop();
 	return 0;
 }

@@ -5,7 +5,7 @@
 
 // TODO: output info
 //
-// 	driver_console_formatln("reading %d-bit value from 0x%x", bits, address);
+// 	driver_terminal_formatln("reading %d-bit value from 0x%x", bits, address);
 //
 //	int bitMask = (1 << bits) - 1;
 //	int msbValue = (1 << (bits - 1));
@@ -14,19 +14,19 @@
 //	if (signedData >= msbValue) {
 //		signedData = signedData - msbValue - msbValue;
 //	}
-// 	driver_console_formatln("writing %d-bit value %d / %d / 0x%x to 0x%x", bits, unsignedData, signedData, unsignedData, address);
+// 	driver_terminal_formatln("writing %d-bit value %d / %d / 0x%x to 0x%x", bits, unsignedData, signedData, unsignedData, address);
 //
 
 static void _cmd_help() {
     if (!shell_processOptionsAndArguments()) {
         return;
     }
-	driver_console_println("List of commands:");
+	driver_terminal_printlnString("List of commands:");
 	for (int i=0; i<shell_commandPatternCount; i++) {
 		const shell_CommandPattern *commandPattern = shell_commandPatterns + i;
-		driver_console_print("    ");
+		driver_terminal_printString("    ");
 		shell_printSynopsis(commandPattern);
-		driver_console_println("");
+		driver_terminal_println();
 	}
 }
 
@@ -51,7 +51,7 @@ static void readHelper(int data, int bits) {
 	if (signedData >= msbValue) {
 		signedData = signedData - msbValue - msbValue;
 	}
-	driver_console_formatln("read %d-bit value %d / %d / 0x%x", bits, unsignedData, signedData, unsignedData);
+	driver_terminal_formatln("read %d-bit value %d / %d / 0x%x", bits, unsignedData, signedData, unsignedData);
 }
 
 static void _cmd_read8(int __attribute__((unused)) argumentCount, const shell_ParsedArgument *arguments) {
@@ -69,36 +69,36 @@ static void _cmd_read32(int __attribute__((unused)) argumentCount, const shell_P
 static void _cmd_dump8(int __attribute__((unused)) argumentCount, const shell_ParsedArgument *arguments) {
 	int address = arguments[0].properties[0].asInt;
 	for (int row = 0; row < 16; row++) {
-		driver_console_format("%08x:", address);
+		driver_terminal_format("%08x:", address);
 		for (int column = 0; column < 16; column++) {
-			driver_console_format(" %02x", driver_memory_read8(address) & 0xff);
+			driver_terminal_format(" %02x", driver_memory_read8(address) & 0xff);
 			address++;
 		}
-		driver_console_println("");
+		driver_terminal_println("");
 	}
 }
 
 static void _cmd_dump16(int __attribute__((unused)) argumentCount, const shell_ParsedArgument *arguments) {
 	int address = arguments[0].properties[0].asInt;
 	for (int row = 0; row < 16; row++) {
-		driver_console_format("%08x:", address);
+		driver_terminal_format("%08x:", address);
 		for (int column = 0; column < 8; column++) {
-			driver_console_format(" %04x", driver_memory_read16(address) & 0xffff);
+			driver_terminal_format(" %04x", driver_memory_read16(address) & 0xffff);
 			address+=2;
 		}
-		driver_console_println("");
+		driver_terminal_println("");
 	}
 }
 
 static void _cmd_dump32(int __attribute__((unused)) argumentCount, const shell_ParsedArgument *arguments) {
 	int address = arguments[0].properties[0].asInt;
 	for (int row = 0; row < 16; row++) {
-		driver_console_format("%08x:", address);
+		driver_terminal_format("%08x:", address);
 		for (int column = 0; column < 4; column++) {
-			driver_console_format(" %08x", ((unsigned int)driver_memory_read32(address)) & 0xffffff);
+			driver_terminal_format(" %08x", ((unsigned int)driver_memory_read32(address)) & 0xffffff);
 			address+=4;
 		}
-		driver_console_println("");
+		driver_terminal_println("");
 	}
 }
 */
