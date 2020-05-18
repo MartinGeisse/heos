@@ -11,7 +11,7 @@ function buildFileForTarget($inputPath, $outputPath, $extension) {
     }
 
     $cppFlags = ($extension == '.cpp' ? ' -fno-rtti ' : '');
-    $baseCommand = TOOL . 'gcc -msmall-data-limit=100000 -march=rv32im -mabi=ilp32 -fno-exceptions ' . $cppFlags .
+    $baseCommand = TOOL . 'gcc -DTARGET_FPGA -msmall-data-limit=100000 -march=rv32im -mabi=ilp32 -fno-exceptions ' . $cppFlags .
         ' -Wall -Wextra -O3 -fno-tree-loop-distribute-patterns -I../bootloader/exported';
     if ($extension != 'S') {
         system($baseCommand . ' -S  -o ' . $outputPath . '.S ' . $inputPath);

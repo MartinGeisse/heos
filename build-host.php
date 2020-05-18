@@ -12,7 +12,7 @@ function buildFileForTarget($inputPath, $outputPath, $extension) {
         die('unknown input file extension: ' . $extension);
     }
     $cppFlags = ($extension == '.cpp' ? ' -fno-rtti ' : '');
-    $baseCommand = 'gcc -fno-exceptions ' . $cppFlags . ' -Wall -Wextra -O3 -fno-tree-loop-distribute-patterns';
+    $baseCommand = 'gcc -DTARGET_HOST -fno-exceptions ' . $cppFlags . ' -Wall -Wextra -O3 -fno-tree-loop-distribute-patterns';
     system($baseCommand . ' -c  -o ' . $outputPath . ' ' . $inputPath);
     return TRUE;
 }

@@ -1,7 +1,7 @@
 
 #include <divrem.h>
 #include <draw.h>
-#include "terminal.h"
+#include "../driver/terminal.h"
 
 static int x, y;
 

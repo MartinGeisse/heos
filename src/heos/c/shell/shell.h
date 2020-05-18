@@ -51,7 +51,7 @@ typedef struct {
 	const shell_ValuePattern *fixedArguments;
 
 	// repeated positional arguments (nullable; single entry since all repeated arguments must be alike)
-	const shellValuePattern *repeatedArgument;
+	const shell_ValuePattern *repeatedArguments;
 
     // the actual command implementation
 	void (*callback)(void);

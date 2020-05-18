@@ -1,6 +1,6 @@
 
 #include <stdlib.h>
-#include "../driver/console.h"
+#include "../driver/terminal.h"
 #include "commands.h"
 
 // TODO: output info
@@ -18,7 +18,7 @@
 //
 
 static void _cmd_help() {
-    if (!shell_processOptionsAndArguments()) {
+    if (!shell_processOptionsAndFixedArguments(NULL)) {
         return;
     }
 	driver_terminal_printlnString("List of commands:");
@@ -115,33 +115,33 @@ const shell_CommandPattern shell_commandPatterns[] = {
 	{.name = "write8", .fixedArgumentCount = 2, .fixedArguments = &((shell_ArgumentPattern[]) {
 		{.name = "address", .type = &shell_intArgumentType},
 		{.name = "data", .type = &shell_intArgumentType},
-	}), .repeatedArgument = NULL, .callback = _cmd_write8},
+	}), .repeatedArguments = NULL, .callback = _cmd_write8},
 	{.name = "write16", .fixedArgumentCount = 2, .fixedArguments = &((shell_ArgumentPattern[]) {
 		{.name = "address", .type = &shell_intArgumentType},
 		{.name = "data", .type = &shell_intArgumentType},
-	}), .repeatedArgument = NULL, .callback = _cmd_write16},
+	}), .repeatedArguments = NULL, .callback = _cmd_write16},
 	{.name = "write32", .fixedArgumentCount = 2, .fixedArguments = &((shell_ArgumentPattern[]) {
 		{.name = "address", .type = &shell_intArgumentType},
 		{.name = "data", .type = &shell_intArgumentType},
-	}), .repeatedArgument = NULL, .callback = _cmd_write32},
+	}), .repeatedArguments = NULL, .callback = _cmd_write32},
 	{.name = "read8", .fixedArgumentCount = 1, .fixedArguments = &((shell_ArgumentPattern[]) {
 		{.name = "address", .type = &shell_intArgumentType},
-	}), .repeatedArgument = NULL, .callback = _cmd_read8},
+	}), .repeatedArguments = NULL, .callback = _cmd_read8},
 	{.name = "read16", .fixedArgumentCount = 1, .fixedArguments = &((shell_ArgumentPattern[]) {
 		{.name = "address", .type = &shell_intArgumentType},
-	}), .repeatedArgument = NULL, .callback = _cmd_read16},
+	}), .repeatedArguments = NULL, .callback = _cmd_read16},
 	{.name = "read32", .fixedArgumentCount = 1, .fixedArguments = &((shell_ArgumentPattern[]) {
 		{.name = "address", .type = &shell_intArgumentType},
-	}), .repeatedArgument = NULL, .callback = _cmd_read32},
+	}), .repeatedArguments = NULL, .callback = _cmd_read32},
 	{.name = "dump8", .fixedArgumentCount = 1, .fixedArguments = &((shell_ArgumentPattern[]) {
 		{.name = "baseAddress", .type = &shell_intArgumentType},
-	}), .repeatedArgument = NULL, .callback = _cmd_dump8},
+	}), .repeatedArguments = NULL, .callback = _cmd_dump8},
 	{.name = "dump16", .fixedArgumentCount = 1, .fixedArguments = &((shell_ArgumentPattern[]) {
 		{.name = "baseAddress", .type = &shell_intArgumentType},
-	}), .repeatedArgument = NULL, .callback = _cmd_dump16},
+	}), .repeatedArguments = NULL, .callback = _cmd_dump16},
 	{.name = "dump32", .fixedArgumentCount = 1, .fixedArguments = &((shell_ArgumentPattern[]) {
 		{.name = "baseAddress", .type = &shell_intArgumentType},
-	}), .repeatedArgument = NULL, .callback = _cmd_dump32},
+	}), .repeatedArguments = NULL, .callback = _cmd_dump32},
 */
 };
 

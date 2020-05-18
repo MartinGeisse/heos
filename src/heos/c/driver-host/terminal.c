@@ -1,7 +1,8 @@
 
-#include <divrem.h>
-#include <draw.h>
-#include "terminal.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "../driver/terminal.h"
 
 void driver_terminal_initialize() {
 }

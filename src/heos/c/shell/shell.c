@@ -88,7 +88,13 @@ static int parseIntHelper(const char *displayName, const char *text, int *destin
 		if (digit >= radix) {
 			driver_terminal_printString("syntax error in <");
             driver_terminal_printString(displayName);
-            driver_terminal_printlnString(">: invalid digit for radix %d: %c (%d)", radix, c, digit);
+            driver_terminal_printString(">: invalid digit for radix ");
+            driver_terminal_printInt(radix);
+            driver_terminal_printString(": ");
+            driver_terminal_printChar(c);
+            driver_terminal_printString(" (");
+            driver_terminal_printInt(digit);
+            driver_terminal_printlnChar(')');
 			return 0;
 		}
 		magnitude = radix * magnitude + digit;
@@ -216,7 +222,7 @@ int shell_processOptionsAndArguments(void *storage) {
 
             case SegmentKind_argument:
                 if (nextFixedArgumentPattern == NULL) {
-                    if (commandPattern->repeatedArgument == NULL) {
+                    if (commandPattern->repeatedArguments == NULL) {
                         driver_terminal_printString("unexpected command argument: ");
                         driver_terminal_printlnString(segment);
                         return 0;
@@ -395,8 +401,8 @@ void shell_printSynopsis(const shell_CommandPattern *commandPattern) {
 	}
 
 	// repeated arguments
-	if (commandPattern->repeatedArgument != NULL) {
-		const shell_ArgumentPattern *argumentPattern = commandPattern->repeatedArgument;
+	if (commandPattern->repeatedArguments != NULL) {
+		const shell_ArgumentPattern *argumentPattern = commandPattern->repeatedArguments;
 		driver_terminal_printString(" <");
 		driver_terminal_printString(argumentPattern->displayName);
         if (argumentPattern->type != shell_ValueType_string) { // don't say "string" when we don't know better
