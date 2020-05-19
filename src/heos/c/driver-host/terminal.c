@@ -8,7 +8,7 @@ void driver_terminal_initialize() {
 }
 
 void driver_terminal_printString(const char *s) {
-    puts(s);
+    printf("%s", s);
 }
 
 void driver_terminal_printChar(char c) {
@@ -75,7 +75,7 @@ void driver_terminal_printlnUnsignedHexInt(unsigned int i) {
 
 void driver_terminal_readLine(char *buffer, int bufferSize) {
     while (1) {
-        puts("> ");
+        printf("> ");
         if (fgets(buffer, bufferSize, stdin) == NULL) {
             printf("ERROR reading from stdin\n");
             exit(1);
