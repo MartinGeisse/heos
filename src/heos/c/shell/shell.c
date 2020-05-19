@@ -112,7 +112,7 @@ static int parseValue(const char *text, const shell_ValuePattern *pattern, void 
     switch (pattern->type) {
 
         case shell_ValueType_string:
-            *(char**)storage = text;
+            *(const char**)storage = text;
             return 1;
 
         case shell_ValueType_integer:
@@ -129,7 +129,7 @@ static int parseValue(const char *text, const shell_ValuePattern *pattern, void 
 // segment splitting
 // --------------------------------------------------------------------------------------------------------------------
 
-static char *segments[16];
+static const char *segments[16];
 static int segmentCount;
 static int repeatedSegmentsConsumed;
 static const shell_CommandPattern *commandPattern;
@@ -193,14 +193,14 @@ static SegmentKind determineSegmentKind(const char *segment) {
     return SegmentKind_longOption;
 }
 
-int shell_processOptionsAndArguments(void *storage) {
+int shell_processOptionsAndFixedArguments(void *storage) {
 
     // We use this index to change the list of segments while processing it, so only a list of repeated arguments
     // remains for shell_processRepeatedArgument().
     int repeatedArgumentsWritten = 0;
 
     // prepare fixed argument storage
-    shell_ValuePattern *nextFixedArgumentPattern = commandPattern->fixedArguments;
+    const shell_ValuePattern *nextFixedArgumentPattern = commandPattern->fixedArguments;
     if (nextFixedArgumentPattern->displayName == NULL) {
         nextFixedArgumentPattern = NULL;
     }
@@ -231,7 +231,7 @@ int shell_processOptionsAndArguments(void *storage) {
                         repeatedArgumentsWritten++;
                     }
                 } else {
-                    if (!parseValue(segment, nextFixedArgumentPattern, storage) {
+                    if (!parseValue(segment, nextFixedArgumentPattern, storage)) {
                         return 0;
                     }
                     nextFixedArgumentPattern++;
@@ -246,15 +246,15 @@ int shell_processOptionsAndArguments(void *storage) {
                 break;
 
             case SegmentKind_shortOptions:
-                for (char *p = segment + 1; *p != 0; p++) {
-                    shell_OptionPattern *optionPattern = shell_findOption(commandPattern, *p);
+                for (const char *p = segment + 1; *p != 0; p++) {
+                    shell_OptionPattern *optionPattern = shell_findShortOption(commandPattern, *p);
                     if (optionPattern == NULL) {
                         driver_terminal_printString("unknown option: -");
                         driver_terminal_printChar(*p);
                         driver_terminal_println();
                         return 0;
                     }
-                    if (optionPattern->flatOffset >= 0) {
+                    if (optionPattern->flagOffset >= 0) {
                         *(((char*)storage) + optionPattern->flagOffset) = 1;
                     }
                     if (optionPattern->argument != NULL) {
@@ -270,7 +270,7 @@ int shell_processOptionsAndArguments(void *storage) {
                             driver_terminal_println();
                             return 0;
                         }
-                        if (!parseValue(i + 1, optionPattern->argument, storage)) {
+                        if (!parseValue(segments[i + 1], optionPattern->argument, storage)) {
                             return 0;
                         }
                         i++;
@@ -285,7 +285,7 @@ int shell_processOptionsAndArguments(void *storage) {
                     driver_terminal_printlnString(segment);
                     return 0;
                 }
-                if (optionPattern->flatOffset >= 0) {
+                if (optionPattern->flagOffset >= 0) {
                     *(((char*)storage) + optionPattern->flagOffset) = 1;
                 }
                 if (optionPattern->argument != NULL) {
@@ -294,7 +294,7 @@ int shell_processOptionsAndArguments(void *storage) {
                         driver_terminal_printlnString(segment);
                         return 0;
                     }
-                    if (!parseValue(i + 1, optionPattern->argument, storage)) {
+                    if (!parseValue(segments[i + 1], optionPattern->argument, storage)) {
                         return 0;
                     }
                     i++;
@@ -387,7 +387,7 @@ void shell_printSynopsis(const shell_CommandPattern *commandPattern) {
 
 	// fixed arguments
 	if (commandPattern->fixedArguments != NULL) {
-        for (shell_ValuePattern *argumentPattern = commandPattern->fixedArguments;
+        for (const shell_ValuePattern *argumentPattern = commandPattern->fixedArguments;
                 argumentPattern->displayName != NULL;
                 argumentPattern++) {
             driver_terminal_printString(" <");
@@ -402,7 +402,7 @@ void shell_printSynopsis(const shell_CommandPattern *commandPattern) {
 
 	// repeated arguments
 	if (commandPattern->repeatedArguments != NULL) {
-		const shell_ArgumentPattern *argumentPattern = commandPattern->repeatedArguments;
+		const shell_ValuePattern *argumentPattern = commandPattern->repeatedArguments;
 		driver_terminal_printString(" <");
 		driver_terminal_printString(argumentPattern->displayName);
         if (argumentPattern->type != shell_ValueType_string) { // don't say "string" when we don't know better
