@@ -215,7 +215,7 @@ int shell_processOptionsAndFixedArguments(void *storage) {
     }
 
     int optionDelimiterSeen = 0;
-    for (int i = 0; i < segmentCount; i++) {
+    for (int i = 1; i < segmentCount; i++) {
         const char *segment = segments[i];
         SegmentKind kind = optionDelimiterSeen ? SegmentKind_argument : determineSegmentKind(segment);
         switch (kind) {
