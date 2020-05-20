@@ -201,7 +201,7 @@ int shell_processOptionsAndFixedArguments(void *storage) {
 
     // prepare fixed argument storage
     const shell_ValuePattern *nextFixedArgumentPattern = commandPattern->fixedArguments;
-    if (nextFixedArgumentPattern->displayName == NULL) {
+    if (nextFixedArgumentPattern != NULL && nextFixedArgumentPattern->displayName == NULL) {
         nextFixedArgumentPattern = NULL;
     }
 
