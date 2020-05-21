@@ -21,7 +21,7 @@ typedef struct {
     int storageOffset;
 } shell_ValuePattern;
 
-#define FIELD_OFFSET(s,f)   (((char*)&(((s*)1000000).f)) - (char*)1000000)
+#define FIELD_OFFSET(s,f)   (((char*)&(((s*)1000000)->f)) - (char*)1000000)
 
 // --------------------------------------------------------------------------------------------------------------------
 // options

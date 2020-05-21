@@ -3,6 +3,13 @@
 #include "../driver/terminal.h"
 #include "commands.h"
 
+#ifdef TARGET_HOST
+unsigned char memory[1024 * 1024];
+#define MEMORY ((char *)memory)
+#else
+#define MEMORY ((char *)0)
+#endif
+
 // TODO: output info
 //
 // 	driver_terminal_formatln("reading %d-bit value from 0x%x", bits, address);
@@ -30,10 +37,20 @@ static void _cmd_help() {
 	}
 }
 
-/*
-static void _cmd_write8(int __attribute__((unused)) argumentCount, const shell_ParsedArgument *arguments) {
-	driver_memory_write8(arguments[0].properties[0].asInt, arguments[1].properties[0].asInt);
+typedef struct {
+    unsigned int address;
+    unsigned int data;
+} WriteCommandArguments;
+
+static void _cmd_write8(void) {
+    WriteCommandArguments arguments;
+    if (!shell_processOptionsAndFixedArguments(&arguments)) {
+        return;
+    }
+    MEMORY[arguments.address] = (char)arguments.data;
 }
+
+/*
 
 static void _cmd_write16(int __attribute__((unused)) argumentCount, const shell_ParsedArgument *arguments) {
 	driver_memory_write16(arguments[0].properties[0].asInt, arguments[1].properties[0].asInt);
@@ -111,11 +128,26 @@ const shell_CommandPattern shell_commandPatterns[] = {
 	    .repeatedArguments = NULL,
 	    .callback = _cmd_help
     },
+	{
+	    .name = "write8",
+	    .options = NULL,
+	    .fixedArguments = (shell_ValuePattern[]) {
+            {
+                .displayName = "address",
+                .type = shell_ValueType_integer,
+                .storageOffset = FIELD_OFFSET(WriteCommandArguments, address)
+            },
+            {
+                .displayName = "data",
+                .type = shell_ValueType_integer,
+                .storageOffset = FIELD_OFFSET(WriteCommandArguments, data)
+            },
+            {.displayName = NULL}
+	    },
+	    .repeatedArguments = NULL,
+	    .callback = _cmd_write8
+	},
 /*
-	{.name = "write8", .fixedArgumentCount = 2, .fixedArguments = &((shell_ArgumentPattern[]) {
-		{.name = "address", .type = &shell_intArgumentType},
-		{.name = "data", .type = &shell_intArgumentType},
-	}), .repeatedArguments = NULL, .callback = _cmd_write8},
 	{.name = "write16", .fixedArgumentCount = 2, .fixedArguments = &((shell_ArgumentPattern[]) {
 		{.name = "address", .type = &shell_intArgumentType},
 		{.name = "data", .type = &shell_intArgumentType},
