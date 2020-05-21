@@ -37,6 +37,8 @@ static void _cmd_help() {
 	}
 }
 
+// --------------------------------------------------------------------------------------------------------------------
+
 typedef struct {
     unsigned int address;
     unsigned int data;
@@ -66,15 +68,40 @@ static void _cmd_write32(void) {
     *(int*)(MEMORY + arguments.address) = arguments.data;
 }
 
+// --------------------------------------------------------------------------------------------------------------------
+
+typedef struct {
+    unsigned int address;
+} ReadCommandArguments;
+
+static void _cmd_read8(void) {
+    ReadCommandArguments arguments;
+    if (!shell_processOptionsAndFixedArguments(&arguments)) {
+        return;
+    }
+    driver_terminal_printString("read: ");
+    driver_terminal_printlnInt(MEMORY[arguments.address]);
+}
+
+static void _cmd_read16(void) {
+    ReadCommandArguments arguments;
+    if (!shell_processOptionsAndFixedArguments(&arguments)) {
+        return;
+    }
+    driver_terminal_printString("read: ");
+    driver_terminal_printlnInt(*(short*)(MEMORY + arguments.address));
+}
+
+static void _cmd_read32(void) {
+    ReadCommandArguments arguments;
+    if (!shell_processOptionsAndFixedArguments(&arguments)) {
+        return;
+    }
+    driver_terminal_printString("read: ");
+    driver_terminal_printlnInt(*(int*)(MEMORY + arguments.address));
+}
+
 /*
-
-static void _cmd_write16(int __attribute__((unused)) argumentCount, const shell_ParsedArgument *arguments) {
-	driver_memory_write16(arguments[0].properties[0].asInt, arguments[1].properties[0].asInt);
-}
-
-static void _cmd_write32(int __attribute__((unused)) argumentCount, const shell_ParsedArgument *arguments) {
-	driver_memory_write32(arguments[0].properties[0].asInt, arguments[1].properties[0].asInt);
-}
 
 static void readHelper(int data, int bits) {
 	int bitMask = (1 << bits) - 1;
@@ -150,6 +177,15 @@ static const shell_ValuePattern writeCommandArgumentPatterns[] = {
     {.displayName = NULL}
 };
 
+static const shell_ValuePattern readCommandArgumentPatterns[] = {
+    {
+        .displayName = "address",
+        .type = shell_ValueType_integer,
+        .storageOffset = FIELD_OFFSET(WriteCommandArguments, address)
+    },
+    {.displayName = NULL}
+};
+
 const shell_CommandPattern shell_commandPatterns[] = {
 	{
 	    .name = "help",
@@ -179,15 +215,29 @@ const shell_CommandPattern shell_commandPatterns[] = {
 	    .repeatedArguments = NULL,
 	    .callback = _cmd_write32
 	},
+	{
+	    .name = "read8",
+	    .options = NULL,
+	    .fixedArguments = readCommandArgumentPatterns,
+	    .repeatedArguments = NULL,
+	    .callback = _cmd_read8
+	},
+	{
+	    .name = "read16",
+	    .options = NULL,
+	    .fixedArguments = readCommandArgumentPatterns,
+	    .repeatedArguments = NULL,
+	    .callback = _cmd_read16
+	},
+	{
+	    .name = "read32",
+	    .options = NULL,
+	    .fixedArguments = readCommandArgumentPatterns,
+	    .repeatedArguments = NULL,
+	    .callback = _cmd_read32
+	},
+
 /*
-	{.name = "write16", .fixedArgumentCount = 2, .fixedArguments = &((shell_ArgumentPattern[]) {
-		{.name = "address", .type = &shell_intArgumentType},
-		{.name = "data", .type = &shell_intArgumentType},
-	}), .repeatedArguments = NULL, .callback = _cmd_write16},
-	{.name = "write32", .fixedArgumentCount = 2, .fixedArguments = &((shell_ArgumentPattern[]) {
-		{.name = "address", .type = &shell_intArgumentType},
-		{.name = "data", .type = &shell_intArgumentType},
-	}), .repeatedArguments = NULL, .callback = _cmd_write32},
 	{.name = "read8", .fixedArgumentCount = 1, .fixedArguments = &((shell_ArgumentPattern[]) {
 		{.name = "address", .type = &shell_intArgumentType},
 	}), .repeatedArguments = NULL, .callback = _cmd_read8},
