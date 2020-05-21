@@ -50,6 +50,22 @@ static void _cmd_write8(void) {
     MEMORY[arguments.address] = (char)arguments.data;
 }
 
+static void _cmd_write16(void) {
+    WriteCommandArguments arguments;
+    if (!shell_processOptionsAndFixedArguments(&arguments)) {
+        return;
+    }
+    *(short*)(MEMORY + arguments.address) = (short)arguments.data;
+}
+
+static void _cmd_write32(void) {
+    WriteCommandArguments arguments;
+    if (!shell_processOptionsAndFixedArguments(&arguments)) {
+        return;
+    }
+    *(int*)(MEMORY + arguments.address) = arguments.data;
+}
+
 /*
 
 static void _cmd_write16(int __attribute__((unused)) argumentCount, const shell_ParsedArgument *arguments) {
@@ -120,6 +136,20 @@ static void _cmd_dump32(int __attribute__((unused)) argumentCount, const shell_P
 }
 */
 
+static const shell_ValuePattern writeCommandArgumentPatterns[] = {
+    {
+        .displayName = "address",
+        .type = shell_ValueType_integer,
+        .storageOffset = FIELD_OFFSET(WriteCommandArguments, address)
+    },
+    {
+        .displayName = "data",
+        .type = shell_ValueType_integer,
+        .storageOffset = FIELD_OFFSET(WriteCommandArguments, data)
+    },
+    {.displayName = NULL}
+};
+
 const shell_CommandPattern shell_commandPatterns[] = {
 	{
 	    .name = "help",
@@ -131,21 +161,23 @@ const shell_CommandPattern shell_commandPatterns[] = {
 	{
 	    .name = "write8",
 	    .options = NULL,
-	    .fixedArguments = (shell_ValuePattern[]) {
-            {
-                .displayName = "address",
-                .type = shell_ValueType_integer,
-                .storageOffset = FIELD_OFFSET(WriteCommandArguments, address)
-            },
-            {
-                .displayName = "data",
-                .type = shell_ValueType_integer,
-                .storageOffset = FIELD_OFFSET(WriteCommandArguments, data)
-            },
-            {.displayName = NULL}
-	    },
+	    .fixedArguments = writeCommandArgumentPatterns,
 	    .repeatedArguments = NULL,
 	    .callback = _cmd_write8
+	},
+	{
+	    .name = "write16",
+	    .options = NULL,
+	    .fixedArguments = writeCommandArgumentPatterns,
+	    .repeatedArguments = NULL,
+	    .callback = _cmd_write16
+	},
+	{
+	    .name = "write32",
+	    .options = NULL,
+	    .fixedArguments = writeCommandArgumentPatterns,
+	    .repeatedArguments = NULL,
+	    .callback = _cmd_write32
 	},
 /*
 	{.name = "write16", .fixedArgumentCount = 2, .fixedArguments = &((shell_ArgumentPattern[]) {

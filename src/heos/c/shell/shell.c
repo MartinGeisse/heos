@@ -412,7 +412,6 @@ void shell_printSynopsis(const shell_CommandPattern *commandPattern) {
         driver_terminal_printString(" ...>");
 	}
 
-	driver_terminal_println();
 }
 
 shell_OptionPattern *shell_findShortOption(const shell_CommandPattern *commandPattern, char name) {
