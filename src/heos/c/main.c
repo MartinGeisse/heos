@@ -3,6 +3,7 @@
 #include "mainLoop/mainLoop.h"
 
 int main(void) {
+    driver_terminal_initialize();
     driver_terminal_println();
     driver_terminal_printlnString("****************");
     driver_terminal_printlnString("* HEOS started *");

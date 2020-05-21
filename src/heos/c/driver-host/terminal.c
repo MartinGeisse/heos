@@ -1,10 +1,20 @@
 
+#include <termios.h>
+#include <unistd.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "../driver/terminal.h"
 
+
 void driver_terminal_initialize() {
+    struct termios settings;
+    tcgetattr(STDIN_FILENO, &settings);
+    settings.c_lflag &= ~ICANON & ~ECHO;
+    settings.c_cc[VMIN] = 1;
+    settings.c_cc[VTIME] = 0;
+    tcsetattr(STDIN_FILENO, TCSANOW, &settings);
 }
 
 void driver_terminal_printString(const char *s) {
@@ -73,7 +83,9 @@ void driver_terminal_printlnUnsignedHexInt(unsigned int i) {
     driver_terminal_println();
 }
 
+
 void driver_terminal_readLine(char *buffer, int bufferSize) {
+/*
     while (1) {
         printf("> ");
         if (fgets(buffer, bufferSize, stdin) == NULL) {
@@ -89,5 +101,58 @@ void driver_terminal_readLine(char *buffer, int bufferSize) {
             buffer[length - 1] = 0;
         }
         return;
+    }
+*/
+
+    if (bufferSize < 1) {
+        printf("input buffer too small\n");
+        exit(1);
+    }
+    int length = 0;
+    buffer[0] = 0;
+    printf("> \033[s");
+    while (1) {
+        printf("\033[u%s\033[K", buffer);
+        int c = getchar();
+        if (c == 27) {
+            c = getchar();
+            if (c == '[') {
+                c = getchar();
+                switch (c) {
+
+//                    case 'A':
+//                        break;
+//
+//                    case 'B':
+//                        break;
+//
+//                    case 'C':
+//                        break;
+//
+//                    case 'D':
+//                        break;
+
+                    default:
+                        printf("*** escape: %d\n", c);
+
+                }
+            }
+        } else if (c == '\n') {
+            printf("\n");
+            return;
+        } else if (c < 32) {
+            // ignored
+        } else if (c == 127) {
+            if (length > 0) {
+                length--;
+                buffer[length] = 0;
+            }
+        } else {
+            if (length < bufferSize - 1) {
+                buffer[length] = c;
+                length++;
+                buffer[length] = 0;
+            }
+        }
     }
 }
