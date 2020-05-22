@@ -2,10 +2,12 @@
 #include <divrem.h>
 #include <draw.h>
 #include "../driver/terminal.h"
+#include "chargen.h"
 
 static int x, y;
 
 void driver_terminal_initialize() {
+    setFont(CHARACTER_DATA);
     x = y = 0;
 }
 
