@@ -3,6 +3,7 @@
 #include <draw.h>
 #include "../driver/terminal.h"
 #include "chargen.h"
+#include "keyboard.h"
 
 static int x, y;
 
