@@ -11,8 +11,8 @@ function buildFileForTarget($inputPath, $outputPath, $extension) {
     }
 
     $cppFlags = ($extension == '.cpp' ? ' -fno-rtti ' : '');
-    $baseCommand = TOOL . 'gcc -DTARGET_FPGA -msmall-data-limit=100000 -march=rv32im -mabi=ilp32 -fno-exceptions ' . $cppFlags .
-        ' -Wall -Wextra -O3 -fno-tree-loop-distribute-patterns -I../bootloader/exported';
+    $baseCommand = TOOL . 'gcc -DTARGET_FPGA \'-DNULL=((void*)0)\' -msmall-data-limit=100000 -march=rv32im -mabi=ilp32 -fno-exceptions ' . $cppFlags .
+        ' -Wall -Wextra -O3 -fno-tree-loop-distribute-patterns -I../esdk2/riscv/resource/bootloader/exported';
     if ($extension != 'S') {
         system($baseCommand . ' -S  -o ' . $outputPath . '.S ' . $inputPath);
     }
@@ -38,5 +38,6 @@ require('buildscript/common.php');
 
 prepareOutputFolder();
 buildDirectory('src', 'out-fpga');
+buildFile('../esdk2/riscv/resource/bootloader/exported/builtin.S', 'out-fpga/exported.o');
 linkFiles();
 convertExecutable();

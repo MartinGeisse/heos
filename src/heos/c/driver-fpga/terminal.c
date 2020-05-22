@@ -119,3 +119,10 @@ void driver_terminal_printlnUnsignedHexInt(unsigned int i) {
     driver_terminal_printUnsignedHexInt(i);
     driver_terminal_println();
 }
+
+void driver_terminal_readLine(char *buffer, int bufferSize) {
+    if (bufferSize >= 2) {
+        buffer[0] = 'x';
+        buffer[1] = 0;
+    }
+}

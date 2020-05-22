@@ -2,8 +2,6 @@
 #ifndef __DRIVER_CPU_H__
 #define __DRIVER_CPU_H__
 
-#define NULL 0
-
 // not very accurate for now
 void delay(int milliseconds);
 

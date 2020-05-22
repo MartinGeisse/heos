@@ -1,31 +1,8 @@
 
-#include <string.h>
 #include "../driver/terminal.h"
 #include "shell.h"
 #include "commands.h"
-
-// --------------------------------------------------------------------------------------------------------------------
-// helpers
-// --------------------------------------------------------------------------------------------------------------------
-
-static int stringsEqual(const char *a, const char *b) {
-    while (1) {
-        char ca = *a, cb = *b;
-        if (ca == 0) {
-            if (cb == 0) {
-                return 1;
-            } else {
-                return 0;
-            }
-        } else {
-            if (cb == 0 || ca != cb) {
-                return 0;
-            }
-        }
-        a++;
-        b++;
-    }
-}
+#include "../string.h"
 
 // --------------------------------------------------------------------------------------------------------------------
 // value types
@@ -353,7 +330,7 @@ void shell_executeCommandLine(char *commandLine) {
 	commandPattern = NULL;
 	for (int i=0; i<shell_commandPatternCount; i++) {
 		const shell_CommandPattern *tryCommandPattern = shell_commandPatterns + i;
-		if (strcmp(commandName, tryCommandPattern->name) == 0) {
+		if (string_equals(commandName, tryCommandPattern->name)) {
 			commandPattern = tryCommandPattern;
 			break;
 		}
@@ -431,7 +408,7 @@ shell_OptionPattern *shell_findOption(const shell_CommandPattern *commandPattern
         return NULL;
     }
     for (shell_OptionPattern *option = commandPattern->options; option->name != NULL; option++) {
-        if (stringsEqual(name, option->name)) {
+        if (string_equals(name, option->name)) {
             return option;
         }
     }
