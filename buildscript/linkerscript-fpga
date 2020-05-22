@@ -18,7 +18,6 @@ SECTIONS {
     *(.gnu.warning)
 
     /* data */
-    __global_pointer$ = . + 0x800;
     *(.rodata .rodata.* .gnu.linkonce.r.*)
     *(.data .data.* .gnu.linkonce.d.*)
     *(.srodata.cst16) *(.srodata.cst8) *(.srodata.cst4) *(.srodata.cst2) *(.srodata .srodata.*)

@@ -8,6 +8,7 @@ static int x, y;
 
 void driver_terminal_initialize() {
     setFont(CHARACTER_DATA);
+    setDrawColor(1);
     x = y = 0;
 }
 
