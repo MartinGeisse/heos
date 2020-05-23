@@ -10,14 +10,23 @@ static int x, y;
 void driver_terminal_initialize() {
     setFont(CHARACTER_DATA);
     setDrawColor(1);
+    clearScreen(0);
     x = y = 0;
 }
 
-static void advance() {
+static void advanceLine() {
+    x = 0;
+    if (y < 200) {
+        y += 16;
+    } else {
+        scroll(16, 0);
+    }
+}
+
+static void advanceChar() {
     x += 8;
     if (x == 512) { // my display cuts off the right part of the screen, so 512 instead of 640
-        x = 0;
-        y += 16;
+        advanceLine();
     }
 }
 
@@ -28,14 +37,14 @@ void driver_terminal_printString(const char *s) {
             return;
         }
         drawCharacter(x, y, c);
-        advance();
+        advanceChar();
         s++;
     }
 }
 
 void driver_terminal_printChar(char c) {
     drawCharacter(x, y, c);
-    advance();
+    advanceChar();
 }
 
 void driver_terminal_printInt(int i) {
@@ -90,8 +99,7 @@ void driver_terminal_printUnsignedHexInt(unsigned int i) {
 }
 
 void driver_terminal_println() {
-    x = 0;
-    y += 16;
+    advanceLine();
 }
 
 void driver_terminal_printlnString(const char *s) {
