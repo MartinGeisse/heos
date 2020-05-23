@@ -16,7 +16,7 @@ void driver_terminal_initialize() {
 
 static void advanceLine() {
     x = 0;
-    if (y < 200) {
+    if (y < 464) {
         y += 16;
     } else {
         scroll(16, 0);
