@@ -61,11 +61,14 @@ void lanTest(void) {
     send(-1, 32);
     send(-1, 32);
 
-    // disable PHY address decoding for subsequent write operations
+    // disable PHY address decoding for subsequent write operations (actually should not matter since we're using the
+    // right address, but this makes sure a wrong register write doesn't lock us out of the PHY until power down)
     writeManagementRegister(17, 8);
 
-    // configure
-    writeManagementRegister(18, 3);
+    // configure registers as needed
+    writeManagementRegister(0, 0x1000);
+    writeManagementRegister(4, 0x01e1);
+    writeManagementRegister(18, 0x00ff);
 
     // test read
     while (1) {
