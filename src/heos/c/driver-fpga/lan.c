@@ -1,28 +1,28 @@
 
 #include "lan.h"
 #include "../driver/terminal.h"
+#include "cpu.h"
 
-static int mdcWait(int fallingEdgeOutputValue) {
-    int *clock = (int*)0x07000000;
-    int *interface = (int*)0x08000000;
+static int mdcCycle(int outputBit) {
+    outputBit = outputBit & 1;
+    volatile int *clock = (int*)0x07000000;
+    volatile int *interface = (int*)0x08000000;
     // each tick of the hardware clock is 16 clock cycles, i.e. 160ns. We want to wait 200ns, but we might "almost"
     // miss one tick, so we wait three ticks to be safe. Then, missing one means we waited at least 320ns.
     int stop = 3 + *clock;
     while (*clock < stop);
-    *interface = fallingEdgeOutputValue;
+    *interface = outputBit;
     int result = *interface;
     stop = 3 + *clock;
     while (*clock < stop);
+    *interface = outputBit | 2;
     return result;
 }
 
 // first bit is bit 31 of the pattern, next is bit 30, and so on
 static void send(unsigned int pattern, int bits) {
-    int *interface = (int*)0x08000000;
     while (bits > 0) {
-        unsigned int shifted = pattern >> 31;
-        mdcWait(shifted);
-        *interface = shifted | 2;
+        mdcCycle(pattern >> 31);
         pattern = pattern << 1;
         bits--;
     }
@@ -30,21 +30,17 @@ static void send(unsigned int pattern, int bits) {
 
 // will store the result in the (bits) lowest bits
 static int receive(int bits) {
-    int *interface = (int*)0x08000000;
     int result = 0;
     while (bits > 0) {
-        result = (result << 1) | mdcWait(1);
-        *interface = 3;
+        result = (result << 1) | mdcCycle(1);
         bits--;
     }
     return result;
 }
 
 static void sendCycleHeader(int write, int registerIndex) {
-    mdcWait(1);
     send(-1, 32);
-    int value = (write ? 0x5003ffff : 0x6003ffff) | (registerIndex << 18);
-    send(value, 16);
+    send((write ? 0x5f83ffff : 0x6f83ffff) | (registerIndex << 18), 16); // phy address is 31
 }
 
 static int readManagementRegister(int registerIndex) {
@@ -65,14 +61,33 @@ void lanTest(void) {
     send(-1, 32);
     send(-1, 32);
 
+    // disable PHY address decoding for subsequent write operations
+    writeManagementRegister(17, 8);
+
+    // configure
+    writeManagementRegister(18, 3);
+
     // test read
-    for (int i = 0; i < 1; i++) { // TODO 32
-        int value = readManagementRegister(i);
-        driver_terminal_printString("register ");
-        driver_terminal_printInt(i);
-        driver_terminal_printString(": ");
-        driver_terminal_printUnsignedHexInt(value);
-        driver_terminal_println();
+    while (1) {
+        driver_terminal_initialize();
+        for (int i = 0; i < 32; i += 4) {
+            driver_terminal_printString("registers ");
+            driver_terminal_printInt(i);
+            driver_terminal_printString("-");
+            driver_terminal_printInt(i + 3);
+            driver_terminal_printString(": ");
+
+            driver_terminal_printUnsignedHexInt(readManagementRegister(i));
+            driver_terminal_printString(", ");
+            driver_terminal_printUnsignedHexInt(readManagementRegister(i + 1));
+            driver_terminal_printString(", ");
+            driver_terminal_printUnsignedHexInt(readManagementRegister(i + 2));
+            driver_terminal_printString(", ");
+            driver_terminal_printUnsignedHexInt(readManagementRegister(i + 3));
+
+            driver_terminal_println();
+        }
+        delay(500);
     }
 
     driver_terminal_printlnString("--- LAN test finished ---");
