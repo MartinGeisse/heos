@@ -93,7 +93,11 @@ static unsigned int crc(unsigned char *buffer, unsigned int length) {
    return ~crc;
 }
 
+static unsigned int assembleBeforeSendBuffer[400];
+
 void sendPacket(unsigned char *destinationMacAddress, unsigned short etherType, int length, void *untypedData) {
+
+    // argument validation
     if (length < 0 || length > 1500) {
         driver_terminal_printString("ERROR: trying to send ethernet frame with invalid length: ");
         driver_terminal_printlnInt(length);
@@ -104,13 +108,11 @@ void sendPacket(unsigned char *destinationMacAddress, unsigned short etherType, 
     }
     unsigned char *data = (unsigned char *)untypedData;
 
-    volatile unsigned int *interface = (volatile unsigned int *)0x08000000;
-    interface[1024] = 0x55555555;
-    interface[1025] = 0xd5555555;
-    volatile unsigned char *packet = ((unsigned char *)(interface + 1026));
+    // assemble the packet
+    unsigned char *packet = (unsigned char *)assembleBeforeSendBuffer;
     for (int i = 0; i < 6; i++) {
-        packet[i] = myMacAddress[i];
-        packet[6 + i] = destinationMacAddress[i];
+        packet[i] = destinationMacAddress[i];
+        packet[6 + i] = myMacAddress[i];
     }
     packet[12] = etherType >> 8;
     packet[13] = etherType & 0xff;
@@ -122,14 +124,24 @@ void sendPacket(unsigned char *destinationMacAddress, unsigned short etherType, 
     packet[15 + length] = (crcValue >> 8) & 0xff;
     packet[16 + length] = (crcValue >> 16) & 0xff;
     packet[17 + length] = (crcValue >> 24);
-    interface[3] = 18 + length;
+
+    // transfer data to the hardware and send it
+    volatile unsigned int *interface = (volatile unsigned int *)0x08000000;
+    interface[1024] = 0x55555555;
+    interface[1025] = 0xd5555555;
+    for (int i = 0; i < 400 / 4; i++) {
+        interface[1026 + i] = assembleBeforeSendBuffer[i];
+    }
+    interface[3] = 8 + 18 + length;
+
 }
 
 unsigned char testPayload[] = {
     0x44, 0x88, 0xaa, 0xcc
 };
 unsigned char testDestinationAddress[] = {
-    0xe0, 0x28, 0x6d, 0x04, 0xc7, 0xeb
+    // 0xe0, 0x28, 0x6d, 0x04, 0xc7, 0xeb
+    0x8c, 0xec, 0x4b, 0xb2, 0xde, 0x8d
 };
 
 void lanTest(void) {
