@@ -148,7 +148,9 @@ void lanTest(void) {
     driver_terminal_printlnString("--- begin LAN test ---");
 
     // send test packet
-    sendPacket(testDestinationAddress, 0x8abc, 4, testPayload);
+//    if (0) {
+//        sendPacket(testDestinationAddress, 0x8abc, 4, testPayload);
+//    }
 
     volatile unsigned int *interface = (volatile unsigned int *)0x08000000;
     while (1) {
@@ -212,6 +214,7 @@ void lanTest(void) {
 
         // acknowledge received packet
         interface[1] = 0;
+        driver_terminal_printlnString("--------------------------------------------------------");
 
     }
 
