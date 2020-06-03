@@ -1,4 +1,5 @@
 
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -10,6 +11,10 @@
 #include <netpacket/packet.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+
+// Must not be less than 64 because we don't have an explicit chunk size field, and the minimum frame size will
+// cause the ethernet driver to send a wrong size.
+#define CHUNK_SIZE  1024
 
 const unsigned short HEOS_CONTROL_ETHERTYPE = 0x8abc;
 // const unsigned short HEOS_RESET_ETHERTYPE = 0x8cba;
@@ -102,11 +107,11 @@ int main(void) {
     for (int i = 0; i < 5; i++) {
         printf("run %d\n", i);
         fseek(inputFile, 0L, SEEK_SET);
-        for (int position = 0; position < fileSize; position += 1024) {
+        for (int position = 0; position < fileSize; position += CHUNK_SIZE) {
             if ((position & 16383) == 0) {
                 printf("  position: %d\n", position);
             }
-            unsigned char bodyPacket[1032] = {
+            unsigned char bodyPacket[CHUNK_SIZE + 8] = {
 
                 // packet type
                 0x01, 0x00, 0x00, 0x00,
@@ -118,9 +123,9 @@ int main(void) {
                 (unsigned char)(position >> 24),
 
             };
-            fread(bodyPacket + 8, 1, 1024, inputFile);
+            fread(bodyPacket + 8, 1, CHUNK_SIZE, inputFile);
+            usleep(2 * 1000 * 1000);
             sendPacket(socket, broadcastAddress, bodyPacket, sizeof(bodyPacket));
-
         }
     }
     return 0;

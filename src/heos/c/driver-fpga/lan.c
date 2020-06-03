@@ -97,7 +97,7 @@ static unsigned int assembleBeforeSendBuffer[400];
 
 void sendPacket(unsigned char *destinationMacAddress, unsigned short etherType, int length, void *untypedData) {
 
-    // argument validation
+    // argument validation TODO minimum frame size is 64, max is 1522! (min PAYLOAD size is 1500)
     if (length < 0 || length > 1500) {
         driver_terminal_printString("ERROR: trying to send ethernet frame with invalid length: ");
         driver_terminal_printlnInt(length);

@@ -74,8 +74,8 @@ static unsigned int crc(unsigned char *buffer, unsigned int length) {
 }
 
 typedef struct {
-    unsigned int length;
     unsigned char *data;
+    unsigned int length;
 } ReceivedPacket;
 
 static ReceivedPacket receivePacket(void) {
@@ -86,8 +86,8 @@ static ReceivedPacket receivePacket(void) {
         while (interface[1] == 0);
         unsigned int packetLength = interface[2];
 
-        // ignore short packets -- must contain at least preamble, source/destination address and ethertype
-        if (packetLength < 22) {
+        // ignore short packets -- must contain at least preamble, source/destination address, ethertype and HEOS command code
+        if (packetLength < 26) {
             interface[1] = 0;
             continue;
         }
@@ -100,9 +100,9 @@ static ReceivedPacket receivePacket(void) {
         unsigned char *packet = ((unsigned char *)(interface + 1026));
         packetLength -= 8;
 
-        // check ignored ethertypes
+        // check for correct ethertype
         unsigned short etherType = (packet[12] << 8) + packet[13];
-        if (etherType == 0x88e1 || etherType == 0x8912) { // FritzBox mesh detection
+        if (etherType != 0x8abc) {
             interface[1] = 0;
             continue;
         }
@@ -116,10 +116,10 @@ static ReceivedPacket receivePacket(void) {
             continue;
         }
 
-        // packet successfully received
+        // remove destination / source addresses, ethertype and CRC
         ReceivedPacket result;
-        result.length = packetLength;
-        result.data = packet;
+        result.data = packet + 14;
+        result.length = packetLength - 18;
         return result;
 
     }
@@ -134,36 +134,47 @@ static void dismissReceivedPacket(void) {
 // netboot logic
 // --------------------------------------------------------------------------------------------------------------------
 
-static void printHexDigit(int digit) {
-    driver_terminal_printChar(digit < 10 ? (digit + '0') : (digit - 10 + 'a'));
-}
-
 void netboot(void) {
     managementInitialize();
     driver_terminal_printlnString("--- netboot ---");
+
+    // wait for initialization packet
+    unsigned int totalSize;
     while (1) {
-
         ReceivedPacket packet = receivePacket();
-
-        // print length
-        driver_terminal_printString("received packet; length = ");
-        driver_terminal_printlnUnsignedHexInt(packet.length);
-
-        // print first 128 bytes
-        if (packet.length > 256) {
-            packet.length = 256;
+        unsigned int commandCode = ((unsigned int*)(packet.data))[0];
+        driver_terminal_printlnUnsignedInt(commandCode);
+        driver_terminal_printlnUnsignedInt(packet.length);
+        if (commandCode == 0 && packet.length >= 8) {
+            totalSize = ((unsigned int*)(packet.data))[1];
+            dismissReceivedPacket();
+            break;
         }
-        for (unsigned int i = 0; i < packet.length; i++) {
-            unsigned char byte = packet.data[i];
-            printHexDigit(byte >> 4);
-            printHexDigit(byte & 15);
-            driver_terminal_printString("  ");
-        }
-        driver_terminal_println();
-
-        // finished
         dismissReceivedPacket();
-        driver_terminal_printlnString("--------------------------------------------------------");
-
     }
+    driver_terminal_printString("total size: ");
+    driver_terminal_printlnUnsignedInt(totalSize);
+
+    // receive data
+    unsigned int receivedByteCount = 0;
+    while (receivedByteCount < totalSize) {
+        ReceivedPacket packet = receivePacket();
+        unsigned int commandCode = ((unsigned int*)(packet.data))[0];
+        if (commandCode == 1) {
+            unsigned int packetPosition = ((unsigned int*)(packet.data))[1];
+            if (packetPosition <= receivedByteCount) {
+                unsigned int packetDataWords = (packet.length - 8) >> 2;
+                unsigned int packetDataBytes = (packetDataWords << 2);
+                if (packetPosition + packetDataBytes > receivedByteCount) {
+                    // TODO copy data
+                    receivedByteCount = packetPosition + packetDataBytes;
+                    driver_terminal_printlnUnsignedInt(receivedByteCount);
+                }
+            }
+        }
+        dismissReceivedPacket();
+    }
+    driver_terminal_printString("netboot finshed!");
+    // TODO jump to code
+    while (1);
 }
