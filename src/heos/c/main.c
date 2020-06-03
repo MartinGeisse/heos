@@ -19,7 +19,7 @@ int main(void) {
 
     // mainLop_loop();
 
-    netboot();
+    // netboot();
 
     while (1) {
         int scanCode = fetchKeyboardScanCode();

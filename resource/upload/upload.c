@@ -57,7 +57,7 @@ struct sockaddr_ll getBroadcastAddress(int interfaceIndex) {
 }
 
 void sendPacket(int socket, struct sockaddr_ll destinationAddress, void *buffer, unsigned int length) {
-    // We still have a high packet loss rate, so we repeat each packet multiple times. While we also repeat the whole
+    // We still have a high packet loss rate, so we repeat each packet multiple times. While might just repeat the whole
     // sending process multiple times, without this here, a single packet loss would force us to wait a "full cycle",
     // and also the number of permitted packet drops would be quite small.
     for (int i = 0; i < 5; i++) {
@@ -109,30 +109,26 @@ int main(void) {
     };
     sendPacket(socket, broadcastAddress, headerPacket, sizeof(headerPacket));
 
-    // send file contents; send it multiple times in case a packet gets overlooked
-    for (int i = 0; i < 5; i++) {
-        printf("run %d\n", i);
-        fseek(inputFile, 0L, SEEK_SET);
-        for (int position = 0; position < fileSize; position += CHUNK_SIZE) {
-            if ((position & 16383) == 0) {
-                printf("  position: %d\n", position);
-            }
-            unsigned char bodyPacket[CHUNK_SIZE + 8] = {
-
-                // packet type
-                0x01, 0x00, 0x00, 0x00,
-
-                // position
-                (unsigned char)(position),
-                (unsigned char)(position >> 8),
-                (unsigned char)(position >> 16),
-                (unsigned char)(position >> 24),
-
-            };
-            fread(bodyPacket + 8, 1, CHUNK_SIZE, inputFile);
-            sendPacket(socket, broadcastAddress, bodyPacket, sizeof(bodyPacket));
+    // send file contents
+    for (int position = 0; position < fileSize; position += CHUNK_SIZE) {
+        if ((position & 16383) == 0) {
+            printf("  position: %d\n", position);
         }
-    }
-    return 0;
+        unsigned char bodyPacket[CHUNK_SIZE + 8] = {
 
+            // packet type
+            0x01, 0x00, 0x00, 0x00,
+
+            // position
+            (unsigned char)(position),
+            (unsigned char)(position >> 8),
+            (unsigned char)(position >> 16),
+            (unsigned char)(position >> 24),
+
+        };
+        fread(bodyPacket + 8, 1, CHUNK_SIZE, inputFile);
+        sendPacket(socket, broadcastAddress, bodyPacket, sizeof(bodyPacket));
+    }
+
+    return 0;
 }
