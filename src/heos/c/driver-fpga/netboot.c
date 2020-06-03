@@ -78,10 +78,6 @@ typedef struct {
     unsigned int length;
 } ReceivedPacket;
 
-static void printHexDigit(int digit) {
-    driver_terminal_printChar(digit < 10 ? (digit + '0') : (digit - 10 + 'a'));
-}
-
 static ReceivedPacket receivePacket(void) {
     volatile unsigned int *interface = (volatile unsigned int *)0x08000000;
     while (1) {
@@ -125,17 +121,6 @@ static ReceivedPacket receivePacket(void) {
         result.data = packet + 14;
         result.length = packetLength - 18;
 
-        // TODO test
-        driver_terminal_printString("received packet; length = ");
-        driver_terminal_printlnUnsignedHexInt(result.length);
-        unsigned int printLength = (result.length > 32 ? 32 : result.length);
-        for (unsigned int i = 0; i < printLength; i++) {
-            unsigned char byte = result.data[i];
-            printHexDigit(byte >> 4);
-            printHexDigit(byte & 15);
-            driver_terminal_printString("  ");
-        }
-
         return result;
 
     }
@@ -167,8 +152,6 @@ void netboot(void) {
     while (1) {
         ReceivedPacket packet = receivePacket();
         unsigned int commandCode = readUnsignedInt(packet.data);
-        driver_terminal_printlnUnsignedInt(commandCode);
-        driver_terminal_printlnUnsignedInt(packet.length);
         if (commandCode == 0 && packet.length >= 8) {
             totalSize = readUnsignedInt(packet.data + 4);
             dismissReceivedPacket();

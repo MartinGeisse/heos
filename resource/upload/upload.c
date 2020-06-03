@@ -57,8 +57,14 @@ struct sockaddr_ll getBroadcastAddress(int interfaceIndex) {
 }
 
 void sendPacket(int socket, struct sockaddr_ll destinationAddress, void *buffer, unsigned int length) {
-    if (sendto(socket, buffer, length, 0, (struct sockaddr*)&destinationAddress, sizeof(destinationAddress)) == -1) {
-        dieErrno();
+    // We still have a high packet loss rate, so we repeat each packet multiple times. While we also repeat the whole
+    // sending process multiple times, without this here, a single packet loss would force us to wait a "full cycle",
+    // and also the number of permitted packet drops would be quite small.
+    for (int i = 0; i < 5; i++) {
+        usleep(10 * 1000);
+        if (sendto(socket, buffer, length, 0, (struct sockaddr*)&destinationAddress, sizeof(destinationAddress)) == -1) {
+            dieErrno();
+        }
     }
 }
 
@@ -124,7 +130,6 @@ int main(void) {
 
             };
             fread(bodyPacket + 8, 1, CHUNK_SIZE, inputFile);
-            usleep(2 * 1000 * 1000);
             sendPacket(socket, broadcastAddress, bodyPacket, sizeof(bodyPacket));
         }
     }
