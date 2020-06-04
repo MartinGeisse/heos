@@ -12,8 +12,8 @@ int main(void) {
     driver_terminal_printlnString("****************");
     driver_terminal_println();
 
-    // lan_initialize();
-    // lanTest();
+    lan_initialize();
+    lanTest();
 
     // mainLop_loop();
 

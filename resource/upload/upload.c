@@ -61,7 +61,7 @@ void sendPacket(int socket, struct sockaddr_ll destinationAddress, void *buffer,
     // sending process multiple times, without this here, a single packet loss would force us to wait a "full cycle",
     // and also the number of permitted packet drops would be quite small.
     for (int i = 0; i < 5; i++) {
-        usleep(30 * 1000); // carefully tuned for speed vs. packet loss
+        usleep(100 * 1000); // carefully tuned for speed vs. packet loss
         if (sendto(socket, buffer, length, 0, (struct sockaddr*)&destinationAddress, sizeof(destinationAddress)) == -1) {
             dieErrno();
         }

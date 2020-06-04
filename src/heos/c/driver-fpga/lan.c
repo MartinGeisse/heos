@@ -97,16 +97,23 @@ static unsigned int assembleBeforeSendBuffer[400];
 
 void sendPacket(unsigned char *destinationMacAddress, unsigned short etherType, int length, void *untypedData) {
 
-    // argument validation TODO minimum frame size is 64, max is 1522! (min PAYLOAD size is 1500)
+    // argument validation
+    if (etherType < 1536) {
+        // Sending the length instead is formally allowed, but we don't want to do that because we can't identify
+        // such packets in a useful way.
+        driver_terminal_printString("ERROR: invalid etherType: ");
+        driver_terminal_printlnInt(etherType);
+        return;
+    }
     if (length < 0 || length > 1500) {
         driver_terminal_printString("ERROR: trying to send ethernet frame with invalid length: ");
         driver_terminal_printlnInt(length);
         return;
     }
-    if (etherType < 1536) {
-        etherType = length;
-    }
     unsigned char *data = (unsigned char *)untypedData;
+
+    // pad to minimum frame size with zero-bytes
+    int effectiveLength = (length < 46 ? 46 : length);
 
     // assemble the packet
     unsigned char *packet = (unsigned char *)assembleBeforeSendBuffer;
@@ -119,21 +126,34 @@ void sendPacket(unsigned char *destinationMacAddress, unsigned short etherType, 
     for (int i = 0; i < length; i++) {
         packet[14 + i] = data[i];
     }
-    unsigned int crcValue = crc(data, length);
-    packet[14 + length] = (crcValue & 0xff);
-    packet[15 + length] = (crcValue >> 8) & 0xff;
-    packet[16 + length] = (crcValue >> 16) & 0xff;
-    packet[17 + length] = (crcValue >> 24);
+    for (int i = length; i < 46; i++) {
+        packet[14 + i] = 0; // pad to minimum payload size
+    }
+    unsigned int crcValue = crc(packet, 14 + effectiveLength);
+    packet[14 + effectiveLength] = (crcValue & 0xff);
+    packet[15 + effectiveLength] = (crcValue >> 8) & 0xff;
+    packet[16 + effectiveLength] = (crcValue >> 16) & 0xff;
+    packet[17 + effectiveLength] = (crcValue >> 24);
 
     // transfer data to the hardware and send it
     volatile unsigned int *interface = (volatile unsigned int *)0x08000000;
     interface[1024] = 0x55555555;
     interface[1025] = 0xd5555555;
-    for (int i = 0; i < 400 / 4; i++) {
+    for (int i = 0; i < 400; i++) {
         interface[1026 + i] = assembleBeforeSendBuffer[i];
     }
-    interface[3] = 8 + 18 + length;
+    interface[3] = 8 + 18 + effectiveLength;
 
+    int a = interface[3];
+    int b = interface[3];
+    int c = interface[3];
+    int d = interface[3];
+    int e = interface[3];
+    driver_terminal_printChar(a ? '1' : '0');
+    driver_terminal_printChar(b ? '1' : '0');
+    driver_terminal_printChar(c ? '1' : '0');
+    driver_terminal_printChar(d ? '1' : '0');
+    driver_terminal_printChar(e ? '1' : '0');
 }
 
 unsigned char testPayload[] = {
@@ -146,13 +166,29 @@ unsigned char testDestinationAddress[] = {
 
 void lanTest(void) {
     driver_terminal_printlnString("--- begin LAN test ---");
-
-    // send test packet
-//    if (0) {
-//        sendPacket(testDestinationAddress, 0x8abc, 4, testPayload);
-//    }
-
     volatile unsigned int *interface = (volatile unsigned int *)0x08000000;
+
+    // wait for keypress
+    driver_terminal_printlnString("press enter to start send test");
+    while (!KEY_STATE(0x5a));
+    while (KEY_STATE(0x5a));
+
+    // send test packet when ready to send and not receiving anything (so we can see its loopback copy)
+    driver_terminal_printlnString("waiting for test start condition");
+    while (1) {
+        if (interface[1]) {
+            interface[1] = 0;
+        } else if (interface[3]) {
+            break;
+        }
+    }
+    driver_terminal_printString("send...");
+    // writeManagementRegister(0, 0x5000);
+    sendPacket(testDestinationAddress, 0x8ccc, 4, testPayload);
+    delay(100);
+    // writeManagementRegister(0, 0x1000);
+    driver_terminal_printlnString(" done");
+
     while (1) {
 
         // wait for packet
