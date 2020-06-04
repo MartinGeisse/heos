@@ -4,8 +4,6 @@
 #include "driver-fpga/keyboard.h"
 #include "driver-fpga/lan.h"
 
-void netboot(void);
-
 int main(void) {
     driver_terminal_initialize();
     driver_terminal_println();
@@ -18,8 +16,6 @@ int main(void) {
     // lanTest();
 
     // mainLop_loop();
-
-    // netboot();
 
     while (1) {
         int scanCode = fetchKeyboardScanCode();
